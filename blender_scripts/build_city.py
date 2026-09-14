@@ -213,6 +213,7 @@ def stats_dump(path: Path, t0: float, preset: str):
     scene = bpy.context.scene
     meshes = list(bpy.data.meshes)
     objects = [o for o in bpy.data.objects if o.type == "MESH"]
+    n_obj = len(objects)
     tris = 0
     verts = 0
     for m in meshes:
@@ -226,14 +227,19 @@ def stats_dump(path: Path, t0: float, preset: str):
     payload = {
         "preset": preset,
         "seconds": round(time.perf_counter() - t0, 3),
-        "objects": len(objects),
+        "objects": n_obj,
         "meshes": len(meshes),
         "materials": len(bpy.data.materials),
         "verts": verts,
         "tris": tris,
         "depsgraph_ms": round(dg_ms, 3),
         "statistics": text,
-        "rt_cost": round(0.45 * math.log10(max(objects, 1) + 1) + 0.45 * math.log10(max(tris, 1) + 1) + 0.10 * math.log10(max(dg_ms, 0.01) + 1), 4),
+        "rt_cost": round(
+            0.45 * math.log10(n_obj + 1)
+            + 0.45 * math.log10(max(tris, 1) + 1)
+            + 0.10 * math.log10(max(dg_ms, 0.01) + 1),
+            4,
+        ),
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

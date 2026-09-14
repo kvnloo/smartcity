@@ -33,10 +33,11 @@ def run_preset(name: str) -> dict:
     ]
     print(">>", " ".join(cmd), flush=True)
     proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
-    if proc.returncode != 0:
-        print(proc.stderr[-4000:], file=sys.stderr)
-        raise SystemExit(f"blender failed on {name}")
     path = OUT / f"{name}.json"
+    if proc.returncode != 0 or not path.exists():
+        print(proc.stdout[-3000:], file=sys.stderr)
+        print(proc.stderr[-4000:], file=sys.stderr)
+        raise SystemExit(f"blender failed on {name} (code {proc.returncode})")
     return json.loads(path.read_text(encoding="utf-8"))
 
 
