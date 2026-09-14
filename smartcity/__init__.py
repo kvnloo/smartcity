@@ -1,3 +1,3 @@
-"""SmartCity: slot-based autonomous intersection runtime for Naperville."""
+"""SmartCity: Chicagoland digital twin + Naperville slot network."""
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

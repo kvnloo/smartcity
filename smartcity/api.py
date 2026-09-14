@@ -16,6 +16,12 @@ from pydantic import BaseModel
 
 from smartcity.config import SimConfig
 from smartcity.sim import CitySim
+from smartcity.twin.catalog import summary as catalog_summary
+from smartcity.twin.lanes import snapshot as lane_snapshot
+from smartcity.twin.layers import overlay_geojson
+from smartcity.twin.lights import inventory as lights_inventory
+from smartcity.twin.macro import step_macro
+from smartcity.twin.playbook import INTERVENTIONS
 
 sim = CitySim()
 state = {"running": True, "speed": 6.0}
@@ -28,6 +34,8 @@ class StartBody(BaseModel):
     seed: int = 7
     enable_services: bool = True
     speed: float = 6.0
+    start_hour: float = 7.0
+    start_weekday: int = 0
 
 
 @asynccontextmanager
@@ -41,7 +49,7 @@ async def lifespan(app: FastAPI):
         pass
 
 
-app = FastAPI(title="SmartCity", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="SmartCity", version="0.2.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -78,7 +86,15 @@ async def _runner() -> None:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    return {"ok": True, "t": sim.t, "policy": sim.cfg.policy, "running": state["running"]}
+    twin = sim._twin or {}
+    return {
+        "ok": True,
+        "t": sim.t,
+        "policy": sim.cfg.policy,
+        "running": state["running"],
+        "clock": twin.get("clock"),
+        "weekday": twin.get("weekday_name"),
+    }
 
 
 @app.get("/city")
@@ -100,6 +116,8 @@ def start(body: StartBody) -> dict[str, Any]:
             spawn_per_s=body.spawn_per_s,
             seed=body.seed,
             enable_services=body.enable_services,
+            start_hour=body.start_hour,
+            start_weekday=body.start_weekday,
         )
     )
     state["running"] = True
@@ -117,6 +135,36 @@ def pause() -> dict[str, bool]:
 def set_speed(body: dict[str, float]) -> dict[str, float]:
     state["speed"] = float(body.get("speed", 6.0))
     return {"speed": state["speed"]}
+
+
+@app.get("/catalog")
+def catalog() -> dict[str, Any]:
+    return catalog_summary()
+
+
+@app.get("/twin")
+def twin() -> dict[str, Any]:
+    return step_macro(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+
+
+@app.get("/lanes")
+def lanes() -> dict[str, Any]:
+    return lane_snapshot(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+
+
+@app.get("/region")
+def region() -> dict[str, Any]:
+    return overlay_geojson(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+
+
+@app.get("/lights")
+def lights() -> dict[str, Any]:
+    return lights_inventory(sim.city)
+
+
+@app.get("/playbook")
+def playbook() -> dict[str, Any]:
+    return {"interventions": INTERVENTIONS}
 
 
 @app.websocket("/ws")

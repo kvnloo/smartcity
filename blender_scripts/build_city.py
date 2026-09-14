@@ -25,17 +25,18 @@ DEFAULT_CITY = ROOT / "data" / "processed" / "city.json"
 OUT_DIR = ROOT / "output" / "blends"
 STATS_DIR = ROOT / "output" / "research"
 
+# Solarpunk lookdev: limestone, copper, moss, warm lanterns — not generic gray.
 COLORS = {
-    "asphalt": (0.12, 0.12, 0.13, 1),
-    "lane": (0.18, 0.18, 0.16, 1),
-    "building": (0.55, 0.52, 0.48, 1),
-    "tower": (0.42, 0.48, 0.52, 1),
-    "park": (0.22, 0.38, 0.24, 1),
-    "water": (0.12, 0.28, 0.42, 1),
-    "ground": (0.16, 0.18, 0.16, 1),
-    "slot": (0.15, 0.75, 0.62, 1),
-    "signal": (0.85, 0.35, 0.12, 1),
-    "boundary": (0.2, 0.22, 0.25, 1),
+    "asphalt": (0.16, 0.14, 0.12, 1),
+    "lane": (0.22, 0.20, 0.16, 1),
+    "building": (0.62, 0.54, 0.42, 1),
+    "tower": (0.55, 0.36, 0.22, 1),
+    "park": (0.22, 0.42, 0.24, 1),
+    "water": (0.14, 0.32, 0.38, 1),
+    "ground": (0.18, 0.22, 0.16, 1),
+    "slot": (0.42, 0.72, 0.38, 1),
+    "signal": (0.82, 0.42, 0.22, 1),
+    "boundary": (0.22, 0.26, 0.22, 1),
 }
 
 

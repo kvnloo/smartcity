@@ -1,7 +1,7 @@
 [project]
 name = "smartcity"
-version = "0.1.0"
-description = "Naperville slot-based autonomous intersection city runtime"
+version = "0.2.0"
+description = "Chicagoland digital twin: nested fidelity, tidal lanes, slot intersections"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

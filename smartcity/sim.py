@@ -20,6 +20,9 @@ from smartcity.geo import lonlat
 from smartcity.model import CityModel, load_city
 from smartcity.services import LaborLedger, ServiceBus
 from smartcity.slots import make_manager, movement_key
+from smartcity.twin.demand import diurnal_factor
+from smartcity.twin.lanes import minutes_of_day
+from smartcity.twin.macro import step_macro
 
 CROSS_MPS = CROSSING_MPH * MPH_TO_MPS
 CRUISE_CAP_MPS = CRUISE_CAP_MPH * MPH_TO_MPS
@@ -103,6 +106,7 @@ class CitySim:
             self.nodes = list(self.city.graph.nodes)
         self._spawn_acc = 0.0
         self._ped_on = False
+        self._twin = step_macro(0.0, self.cfg.start_hour, self.cfg.start_weekday)
 
     def reset(self, cfg: SimConfig | None = None) -> None:
         if cfg:
@@ -112,6 +116,7 @@ class CitySim:
     def step(self) -> None:
         dt = self.cfg.dt
         self.t += dt
+        self._twin = step_macro(self.t, self.cfg.start_hour, self.cfg.start_weekday)
         self._spawn(dt)
         if self.cfg.enable_services and self.cfg.policy != "lights":
             self._service_holds()
@@ -186,6 +191,7 @@ class CitySim:
                 "events": self.services.events,
             },
             "labor": self.labor.yearly(delay_saved, self.stats.completed),
+            "twin": self._twin,
         }
 
     def city_layers(self) -> dict:
@@ -226,7 +232,14 @@ class CitySim:
         kinds = ["car"]
         if self.cfg.enable_services:
             kinds.extend(self.services.pop_spawns(self.t))
-        self._spawn_acc += self.cfg.spawn_per_s * dt
+        tti = 1.3
+        i88 = next((c for c in (self._twin or {}).get("corridors", []) if c["id"] == "i88"), None)
+        if i88 and i88.get("tti"):
+            tti = float(i88["tti"])
+        minutes = minutes_of_day(self.t, self.cfg.start_hour)
+        di = diurnal_factor(minutes)
+        rate = self.cfg.spawn_per_s * (0.50 + 0.28 * di) * min(1.55, 0.72 + 0.28 * tti)
+        self._spawn_acc += rate * dt
         n = int(self._spawn_acc)
         self._spawn_acc -= n
         want = n + len([k for k in kinds if k != "car"])

@@ -1,0 +1,233 @@
+{
+  "region": {
+    "name": "CMAP Greater Chicagoland",
+    "counties": ["Cook", "DuPage", "Kane", "Kendall", "Lake", "McHenry", "Will", "Lake IN", "Porter IN"],
+    "bbox": { "west": -88.71, "south": 41.20, "east": -87.02, "north": 42.50 },
+    "origin_lonlat": [-88.147, 41.750],
+    "hardware_target": "RTX 3080 Ti 10GB + i9-10900K"
+  },
+  "stack": {
+    "authoring": "Blender (OSM/Overture extrusion + optional Blosm 3D Tiles)",
+    "hero_rt": "Unreal 5 World Partition + Nanite + Cesium",
+    "micro": "Eclipse SUMO + TraCI + this repo's slot/AIM pads",
+    "meso": "SUMO meso / cell-transmission",
+    "macro": "Census LODES + GTFS + tidal-lane clock",
+    "do_not_write": ["custom traffic engine", "custom GIS scraper", "CARLA at metro scale", "Google Maps scrape"]
+  },
+  "datasets": [
+    {
+      "id": "osm-highways",
+      "theme": "speed_limits_network",
+      "access": "open",
+      "license": "ODbL",
+      "url": "https://download.geofabrik.de/north-america/us/illinois-latest.osm.pbf",
+      "notes": "maxspeed, lanes, oneway, turn:lanes, traffic_signals, highway. Clip to CMAP bbox with osmium. Primary graph. Pair with indiana-latest.osm.pbf for Gary/Porter."
+    },
+    {
+      "id": "osm-indiana-fringe",
+      "theme": "speed_limits_network",
+      "access": "open",
+      "license": "ODbL",
+      "url": "https://download.geofabrik.de/north-america/us/indiana-latest.osm.pbf",
+      "notes": "NW Indiana (Gary, Hammond, Porter) is part of the commute shed."
+    },
+    {
+      "id": "overture-buildings",
+      "theme": "buildings",
+      "access": "open",
+      "license": "CDLA Permissive 2.0",
+      "url": "https://docs.overturemaps.org/getting-data/",
+      "notes": "Microsoft + OSM footprints. DuckDB + httpfs, not a custom building scraper. Suburbs are far more complete than OSM-only."
+    },
+    {
+      "id": "cesium-osm-buildings",
+      "theme": "buildings_3d",
+      "access": "open_metered",
+      "url": "https://cesium.com/learn/ion/cesium-osm-buildings/",
+      "notes": "Cesium ion token, free tier. Region mesh for Unreal. Not photogrammetry."
+    },
+    {
+      "id": "usgs-3dep",
+      "theme": "terrain",
+      "access": "open",
+      "url": "https://epqs.nationalmap.gov/v1/json",
+      "notes": "1/3 arc-second DEM. Unreal Landscape or Cesium world terrain. Chicago is flat; still needed for river cuts and the lake bluff."
+    },
+    {
+      "id": "chicago-zoning",
+      "theme": "zoning",
+      "access": "open",
+      "url": "https://data.cityofchicago.org/resource/nifi-zqag.json",
+      "notes": "Use the JSON/SODA resource, not the empty GeoJSON export. Remap RS/B/M/POS → solarpunk dwell/make/grow in smartcity.twin.zoning."
+    },
+    {
+      "id": "naperville-gis",
+      "theme": "city_information",
+      "access": "open",
+      "url": "https://portal.naperville.il.us/arcgis2/rest/services",
+      "notes": "City ArcGIS: streetlighting, parcels, centerlines. Zoning may sit in a separate Planning service — catalog the MapServer, do not scrape the website."
+    },
+    {
+      "id": "dupage-gis",
+      "theme": "zoning",
+      "access": "open",
+      "url": "https://gis.dupagecounty.gov/arcgis/rest/services",
+      "notes": "County parcels/zoning for the I-88 towns. Use FeatureServer queries with a bbox, not a county-wide dump on a laptop."
+    },
+    {
+      "id": "cmap-landuse",
+      "theme": "regional_landuse",
+      "access": "open",
+      "url": "https://www.cmap.illinois.gov/data/land-use",
+      "notes": "The regional land-use inventory. Better than stitching 200 municipal codes by hand."
+    },
+    {
+      "id": "chicago-congestion",
+      "theme": "traffic_rt_proxy",
+      "access": "open",
+      "url": "https://data.cityofchicago.org/resource/kf7e-cur8.json",
+      "notes": "Traffic Tracker historical speeds by region (bus GPS). Calibrates the diurnal, not a substitute for expressway probes."
+    },
+    {
+      "id": "chicago-traffic-regions",
+      "theme": "traffic_rt_proxy",
+      "access": "open",
+      "url": "https://data.cityofchicago.org/resource/t2qc-9pjd.json",
+      "notes": "Current region congestion polygons + current_speed. 0 usually means no data, not a parking lot."
+    },
+    {
+      "id": "chicago-crashes",
+      "theme": "safety",
+      "access": "open",
+      "url": "https://data.cityofchicago.org/resource/85ca-t3if.json",
+      "notes": "Vision Zero crashes. Weights danger scores on edges; solarpunk redesign should cut these, not hide them."
+    },
+    {
+      "id": "chicago-lights-out",
+      "theme": "street_lights",
+      "access": "open_partial",
+      "url": "https://data.cityofchicago.org/resource/cddf-wev5.json",
+      "notes": "311 outages only. CDOT cites ~250k lights — the inventory is gated. Approximate poles from OSM highway length × spacing."
+    },
+    {
+      "id": "naperville-streetlights",
+      "theme": "street_lights",
+      "access": "open",
+      "url": "https://portal.naperville.il.us/arcgis2/rest/services/DPW/Streetlighting/MapServer/0/query",
+      "notes": "Actual pole points. Page with resultOffset; a single query hits the transfer limit."
+    },
+    {
+      "id": "cta-gtfs",
+      "theme": "transit",
+      "access": "open",
+      "url": "https://www.transitchicago.com/downloads/sch_data/google_transit.zip",
+      "notes": "Static schedules. Pair with GTFS-RT if the feed is up. Do not rewrite a transit router — use OpenTripPlanner or a GTFS library."
+    },
+    {
+      "id": "metra-gtfs",
+      "theme": "transit",
+      "access": "open",
+      "url": "https://gtfs.metra.com/gtfs_pub/google_transit.zip",
+      "notes": "BNSF Naperville–Union Station is the suburb-core spine. One train is 800–1,600 highway seats."
+    },
+    {
+      "id": "pace-gtfs",
+      "theme": "transit",
+      "access": "open",
+      "url": "https://www.pacebus.com/sites/default/files/2020-12/GTFS.zip",
+      "notes": "Suburban bus. URL rotates; if 404, take the current zip from pacebus.com/gtfs."
+    },
+    {
+      "id": "travel-midwest",
+      "theme": "expressway_rt",
+      "access": "open_html",
+      "url": "https://www.travelmidwest.com/",
+      "notes": "IDOT Gateway. Kennedy REVLAC schedule is public. Live occupancy is HTML/GIS, not a clean API — parse or approximate."
+    },
+    {
+      "id": "idot-aadt",
+      "theme": "counts",
+      "access": "open",
+      "url": "https://gis-idot.opendata.arcgis.com/",
+      "notes": "Annual average daily traffic on state routes. Calibrates macro corridor vph."
+    },
+    {
+      "id": "noaa-weather",
+      "theme": "weather_rt",
+      "access": "open",
+      "url": "https://api.weather.gov/points/41.75,-88.15",
+      "notes": "Needs a User-Agent. Rain/snow raise TTI and cut solar. Do not invent a weather model."
+    },
+    {
+      "id": "census-lodes",
+      "theme": "commute_od",
+      "access": "open",
+      "url": "https://lehd.ces.census.gov/data/",
+      "notes": "LEHD LODES origin-destination. The honest commute matrix. Download IL + IN workplace/residence files, aggregate to districts."
+    },
+    {
+      "id": "census-tiger",
+      "theme": "boundaries",
+      "access": "open",
+      "url": "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html",
+      "notes": "County, place, tract polygons. Use these as district boundaries instead of drawing circles."
+    },
+    {
+      "id": "inrix-speeds",
+      "theme": "traffic_rt",
+      "access": "paid",
+      "approximate_with": "chicago-congestion + osm maxspeed + FHWA-shaped diurnal in smartcity.twin.demand",
+      "notes": "Probe speeds. Typical civic contracts. We simulate with a calibrated diurnal + incident noise until a license exists."
+    },
+    {
+      "id": "here-traffic",
+      "theme": "traffic_rt",
+      "access": "paid",
+      "approximate_with": "inrix-speeds approximation",
+      "notes": "Same class as INRIX/TomTom."
+    },
+    {
+      "id": "google-3d-tiles",
+      "theme": "photogrammetry",
+      "access": "paid_metered",
+      "url": "https://tile.googleapis.com/v1/3dtiles/root.json",
+      "notes": "Map Tiles API + Blosm or Cesium. Not a scrape. Downtown tiles only on 10GB VRAM — never the whole metro."
+    },
+    {
+      "id": "streetlight-replica",
+      "theme": "od_trips",
+      "access": "paid",
+      "approximate_with": "census-lodes + GTFS boardings + time-of-day in smartcity.twin.demand.commute_od",
+      "notes": "StreetLight / Replica trip tables. Approximate with LODES + Metra boardings + AADT."
+    },
+    {
+      "id": "argonne-polaris",
+      "theme": "regional_abm",
+      "access": "research",
+      "url": "https://polaris.taps.anl.gov/polaris/index.html",
+      "notes": "THE Chicagoland agent-based twin. Collaborate; do not reimplement activity-based demand. SUMO is the open micro layer under it."
+    },
+    {
+      "id": "eclipse-sumo",
+      "theme": "simulator",
+      "access": "open",
+      "license": "EPL-2.0",
+      "url": "https://github.com/eclipse-sumo/sumo",
+      "notes": "netconvert OSM → .net.xml, TraCI for live control. Meso mode for the 40 km ring. Do not write a car-following engine."
+    },
+    {
+      "id": "osmnx",
+      "theme": "graph_extract",
+      "access": "open",
+      "url": "https://github.com/gboeing/osmnx",
+      "notes": "The maintained way to cut a driveable graph from OSM. Use it when expanding past the Naperville Overpass extract."
+    },
+    {
+      "id": "ab-street",
+      "theme": "traffic_sandbox",
+      "access": "open",
+      "url": "https://github.com/a-b-street/abstreet",
+      "notes": "Rust traffic sandbox, great for arterial design (road diets, turn restrictions) before Unreal lookdev."
+    }
+  ]
+}

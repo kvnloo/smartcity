@@ -3,27 +3,34 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SmartCity — Naperville slot network</title>
+    <title>SmartCity — Chicagoland twin</title>
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="/ui/styles.css" />
   </head>
   <body>
     <header class="top">
-      <div>
-        <p class="kicker">Naperville, Illinois</p>
-        <h1>Slot network live</h1>
+      <div class="brand">
+        <p class="kicker">Greater Chicagoland · solarpunk operating picture</p>
+        <h1>Nested twin <span id="clock" class="clock">—:—</span></h1>
       </div>
       <p class="lede">
-        Traffic lights are retired. Vehicles request time slots, bleed speed early, and
-        cross without stopping. Same reservation fabric also clears ambulances, buses,
-        deliveries, and pedestrian pulses.
+        Weather-model rings: Unreal at 1.5 km, SUMO at 8 km, expressway meso to 40 km,
+        district flows to the lake. Kennedy already has reversible lanes. I-88 and Ogden
+        get the same operator. Probe speeds behind a paywall are a diurnal until they
+        aren’t.
       </p>
     </header>
 
     <main class="layout">
       <section class="map-wrap">
-        <div id="map" role="application" aria-label="Naperville live map"></div>
-        <div id="map-status" class="map-status">Connecting to the city runtime…</div>
+        <div id="map" role="application" aria-label="Chicagoland live map"></div>
+        <div class="map-chrome">
+          <div class="view-toggle" role="group" aria-label="Map scale">
+            <button type="button" id="view-street" class="on">Naperville streets</button>
+            <button type="button" id="view-metro">Metro corridors</button>
+          </div>
+          <div id="map-status" class="map-status">Connecting to the city runtime…</div>
+        </div>
       </section>
 
       <aside class="panel">
@@ -38,7 +45,17 @@
             </select>
           </label>
           <label>
-            Fleet size
+            Clock
+            <select name="start_hour">
+              <option value="5">05:00 dawn</option>
+              <option value="7.5" selected>07:30 inbound rush</option>
+              <option value="12.5">12:30 Kennedy flip</option>
+              <option value="17.25">17:15 outbound rush</option>
+              <option value="22">22:00 night dim</option>
+            </select>
+          </label>
+          <label>
+            Naperville fleet
             <input name="target_vehicles" type="number" min="40" max="1200" value="420" />
           </label>
           <div class="row">
@@ -50,13 +67,33 @@
         <div id="error" class="error" hidden></div>
 
         <dl id="metrics" class="metrics">
-          <div><dt>Sim time</dt><dd id="m-t">—</dd></div>
+          <div><dt>World clock</dt><dd id="m-clock">—</dd></div>
           <div><dt>Moving now</dt><dd id="m-active">—</dd></div>
-          <div><dt>Trips done</dt><dd id="m-done">—</dd></div>
           <div><dt>Mean speed</dt><dd id="m-speed">—</dd></div>
           <div><dt>Mean delay</dt><dd id="m-delay">—</dd></div>
+          <div><dt>Trips done</dt><dd id="m-done">—</dd></div>
           <div><dt>Stops</dt><dd id="m-stops">—</dd></div>
         </dl>
+
+        <h2>Programmatic lanes</h2>
+        <ul id="lanes" class="lanes">
+          <li class="empty">Waiting for the tidal clock…</li>
+        </ul>
+
+        <h2>Suburb–core spines</h2>
+        <ul id="corridors" class="corridors">
+          <li class="empty">I-88, Kennedy, BNSF will land with the first snapshot.</li>
+        </ul>
+
+        <h2>Fidelity rings (3080 Ti)</h2>
+        <ul id="rings" class="rings">
+          <li class="empty">hero 1.5 km · micro 8 km · meso 40 km · macro 120 km</li>
+        </ul>
+
+        <h2>Playbook</h2>
+        <ul id="playbook" class="playbook">
+          <li class="empty">Loading interventions…</li>
+        </ul>
 
         <h2>Labor the lights used to buy</h2>
         <ul id="labor" class="labor">
@@ -67,6 +104,8 @@
         <ul id="events" class="events">
           <li class="empty">Waiting for an ambulance corridor, bus pulse, or delivery slot.</li>
         </ul>
+
+        <p id="catalog-line" class="catalog"></p>
       </aside>
     </main>
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>

@@ -15,8 +15,12 @@ dist/
 .turbo/
 tools/
 data/raw/*.osm.json
+data/raw/*.osm.pbf
+data/raw/*.zip
+data/open/full/
 output/blends/*.blend1
 output/research/*.tmp
+output/sumo/
 *.log
 .env
 .env*
