@@ -1,0 +1,13 @@
+{
+  "preset": "tiled_250",
+  "seconds": 0.237,
+  "objects": 245,
+  "meshes": 245,
+  "materials": 10,
+  "verts": 74770,
+  "tris": 86418,
+  "depsgraph_ms": 0.013,
+  "statistics": "Scene Collection | Verts:74,770 | Faces:40,578 | Tris:86,418 | Objects:0/247 | Duration: 00:10+10 (Frame 1/250) | Memory: 22.5 MiB | 5.1.2",
+  "rt_cost": 3.298,
+  "blend": "/workspace/output/blends/naperville_tiled_250.blend"
+}

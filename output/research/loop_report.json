@@ -1,0 +1,72 @@
+{
+  "winner": "lod_lite",
+  "rationale": "Tile meshes so EEVEE can cull off-camera city blocks; join geometry inside a tile to cut object overhead; keep a handful of shared materials. Naive per-building objects lose to draw-call count long before triangle count.",
+  "results": [
+    {
+      "preset": "naive_objects",
+      "seconds": 0.87,
+      "objects": 3472,
+      "meshes": 3472,
+      "materials": 10,
+      "verts": 80392,
+      "tris": 92086,
+      "depsgraph_ms": 0.018,
+      "statistics": "Scene Collection | Verts:80,392 | Faces:43,412 | Tris:92,086 | Objects:0/3,474 | Duration: 00:10+10 (Frame 1/250) | Memory: 122.8 MiB | 5.1.2",
+      "rt_cost": 3.828,
+      "blend": "/workspace/output/blends/naperville_naive_objects.blend"
+    },
+    {
+      "preset": "tiled_250",
+      "seconds": 0.237,
+      "objects": 245,
+      "meshes": 245,
+      "materials": 10,
+      "verts": 74770,
+      "tris": 86418,
+      "depsgraph_ms": 0.013,
+      "statistics": "Scene Collection | Verts:74,770 | Faces:40,578 | Tris:86,418 | Objects:0/247 | Duration: 00:10+10 (Frame 1/250) | Memory: 22.5 MiB | 5.1.2",
+      "rt_cost": 3.298,
+      "blend": "/workspace/output/blends/naperville_tiled_250.blend"
+    },
+    {
+      "preset": "tiled_500",
+      "seconds": 0.217,
+      "objects": 89,
+      "meshes": 89,
+      "materials": 10,
+      "verts": 70904,
+      "tris": 82552,
+      "depsgraph_ms": 0.014,
+      "statistics": "Scene Collection | Verts:70,904 | Faces:38,645 | Tris:82,552 | Objects:0/91 | Duration: 00:10+10 (Frame 1/250) | Memory: 17.4 MiB | 5.1.2",
+      "rt_cost": 3.0925,
+      "blend": "/workspace/output/blends/naperville_tiled_500.blend"
+    },
+    {
+      "preset": "tiled_1000",
+      "seconds": 0.206,
+      "objects": 34,
+      "meshes": 34,
+      "materials": 10,
+      "verts": 66424,
+      "tris": 78072,
+      "depsgraph_ms": 0.011,
+      "statistics": "Scene Collection | Verts:66,424 | Faces:36,405 | Tris:78,072 | Objects:0/36 | Duration: 00:10+10 (Frame 1/250) | Memory: 15.5 MiB | 5.1.2",
+      "rt_cost": 2.8969,
+      "blend": "/workspace/output/blends/naperville_tiled_1000.blend"
+    },
+    {
+      "preset": "lod_lite",
+      "seconds": 0.199,
+      "objects": 47,
+      "meshes": 47,
+      "materials": 10,
+      "verts": 49826,
+      "tris": 53858,
+      "depsgraph_ms": 0.01,
+      "statistics": "Scene Collection | Verts:49,826 | Faces:28,106 | Tris:53,858 | Objects:0/49 | Duration: 00:10+10 (Frame 1/250) | Memory: 14.9 MiB | 5.1.2",
+      "rt_cost": 2.8861,
+      "blend": "/workspace/output/blends/naperville_lod_lite.blend"
+    }
+  ],
+  "copy_winner_to": "output/blends/naperville_city.blend"
+}

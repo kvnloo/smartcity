@@ -1,0 +1,13 @@
+{
+  "preset": "lod_lite",
+  "seconds": 0.199,
+  "objects": 47,
+  "meshes": 47,
+  "materials": 10,
+  "verts": 49826,
+  "tris": 53858,
+  "depsgraph_ms": 0.01,
+  "statistics": "Scene Collection | Verts:49,826 | Faces:28,106 | Tris:53,858 | Objects:0/49 | Duration: 00:10+10 (Frame 1/250) | Memory: 14.9 MiB | 5.1.2",
+  "rt_cost": 2.8861,
+  "blend": "/workspace/output/blends/naperville_lod_lite.blend"
+}

@@ -1,0 +1,13 @@
+{
+  "preset": "naive_objects",
+  "seconds": 0.87,
+  "objects": 3472,
+  "meshes": 3472,
+  "materials": 10,
+  "verts": 80392,
+  "tris": 92086,
+  "depsgraph_ms": 0.018,
+  "statistics": "Scene Collection | Verts:80,392 | Faces:43,412 | Tris:92,086 | Objects:0/3,474 | Duration: 00:10+10 (Frame 1/250) | Memory: 122.8 MiB | 5.1.2",
+  "rt_cost": 3.828,
+  "blend": "/workspace/output/blends/naperville_naive_objects.blend"
+}
