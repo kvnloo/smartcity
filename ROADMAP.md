@@ -10,7 +10,7 @@ The greedy map is [docs/IDEAS.md](docs/IDEAS.md). Renderer is **Unreal**, not Un
 - [x] Nested Chicagoland twin (SUMO-shaped rings, tidal lanes, open-data catalog)
 - [x] Mobile GitHub Pages lookdev with TDD LOD (not the full sim)
 - [x] Verified OSS Loop rolling onboard (`preview` → `nightly` → gated `dev`/`main`)
-- [ ] Click Create repo as **kvnloo/smartcity** and enable Pages (Actions) → https://kvnloo.github.io/smartcity/
+- [ ] Click Create repo as **kvnloo/smartcity**, then [docs/PAGES.md](docs/PAGES.md) (Settings → Pages → GitHub Actions) → https://kvnloo.github.io/smartcity/
 - [ ] Blender OSM tiled mesh → glTF at the Naperville origin
 - [ ] Unreal 5.4 World Partition hero (1.5 km) on the 3080 Ti, Lumen software
 - [ ] SUMO netconvert + TraCI for the 8 km micro ring

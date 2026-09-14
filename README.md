@@ -21,7 +21,8 @@ Workers never merge `main` or `dev`. Overnight work lands on `nightly`.
 
 The idea dump (solarpunk, papers, what we will not build) lives in
 **[docs/IDEAS.md](docs/IDEAS.md)**. Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-Data: [docs/DATA.md](docs/DATA.md). Unreal: [unreal/PIPELINE.md](unreal/PIPELINE.md).
+Data: [docs/DATA.md](docs/DATA.md). Pages clicks: [docs/PAGES.md](docs/PAGES.md).
+Unreal: [unreal/PIPELINE.md](unreal/PIPELINE.md).
 
 ## Three products, one geology
 
@@ -72,8 +73,9 @@ npm run dev       # http://127.0.0.1:43180
 ```
 
 CI (`.github/workflows/verified-oss-loop.yml`) builds `site/dist` on `nightly`
-and deploys Pages. After you click **Create repo** as `kvnloo/smartcity` and
-set Pages → GitHub Actions:
+and deploys Pages. After you click **Create repo** as `kvnloo/smartcity`, follow
+the exact Settings clicks in **[docs/PAGES.md](docs/PAGES.md)**
+(Settings → Pages → Source → **GitHub Actions**):
 
 **https://kvnloo.github.io/smartcity/**
 

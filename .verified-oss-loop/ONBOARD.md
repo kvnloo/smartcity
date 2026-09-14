@@ -20,3 +20,6 @@ Local extras (never overwritten by re-onboard if marked `local`):
 Expected Pages URL after the public GitHub repo exists:
 
 `https://kvnloo.github.io/smartcity/`
+
+Maintainer clicks after Create repo: [docs/PAGES.md](../docs/PAGES.md)
+(Settings → Pages → Source → GitHub Actions). No secrets.
