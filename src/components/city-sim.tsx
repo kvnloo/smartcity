@@ -256,13 +256,13 @@ function SimPane({
           onStats={onStats}
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Stat k="Throughput" v={`${Math.round(stats.throughputPerHour)} /h`} />
-          <Stat k="Mean speed" v={`${Math.round(stats.meanMph)} mph`} />
-          <Stat k="Stopped" v={`${stats.stopped}`} />
-          <Stat k="Delay" v={`${stats.meanDelay.toFixed(1)} s`} />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <Stat k="Throughput" v={`${Math.round(stats.throughputPerHour)} /h`} />
+            <Stat k="Mean speed" v={`${Math.round(stats.meanMph)} mph`} />
+            <Stat k="Stopped" v={`${stats.stopped}`} />
+            <Stat k="Delay" v={`${stats.meanDelay.toFixed(1)} s`} />
+          </div>
         </div>
-      </div>
       {empty ? (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm text-zinc-300">
           No traffic — raise density to spawn cars.

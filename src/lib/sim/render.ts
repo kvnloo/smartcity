@@ -248,8 +248,8 @@ function drawCars(
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(p.heading);
-    const len = Math.max(16, CAR_LENGTH * scale);
-    const wid = Math.max(8, CAR_WIDTH * scale);
+    const len = Math.max(22, CAR_LENGTH * scale * 1.25);
+    const wid = Math.max(11, CAR_WIDTH * scale * 1.25);
     ctx.shadowColor = car.color;
     ctx.shadowBlur = inBox ? 18 : 10;
     ctx.fillStyle = "rgba(8, 10, 16, 0.45)";
