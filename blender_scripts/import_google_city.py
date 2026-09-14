@@ -115,7 +115,11 @@ def ensure_blosm() -> Path:
     if BLOSM_DIR.exists():
         shutil.rmtree(BLOSM_DIR)
     print(f"Cloning Blosm into {BLOSM_DIR} …", flush=True)
-    subprocess.check_call(["git", "clone", "--depth", "1", "--branch", "release", BLOSM_REPO, str(BLOSM_DIR)])
+    try:
+        subprocess.check_call(["git", "clone", "--depth", "1", "--branch", "release", BLOSM_REPO, str(BLOSM_DIR)])
+    except subprocess.CalledProcessError:
+        shutil.rmtree(BLOSM_DIR, ignore_errors=True)
+        subprocess.check_call(["git", "clone", "--depth", "1", BLOSM_REPO, str(BLOSM_DIR)])
     return BLOSM_DIR
 
 
