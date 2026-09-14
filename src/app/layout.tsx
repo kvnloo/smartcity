@@ -19,7 +19,11 @@ export const metadata: Metadata = {
     "Interactive simulation of MIT Senseable City Lab’s 2016 slot-based intersection: autonomous cars weave through a city without traffic lights.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="en"
