@@ -9,7 +9,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TrafficSim, type SimSnapshot } from "@/lib/sim/engine";
-import { DEFAULT_CONFIG, sanitizeConfig, type SimConfig, type SpeedRegime, type ViewMode } from "@/lib/sim/geometry";
+import {
+  CRUISE_MPH_DEFAULT,
+  CRUISE_MPH_MAX,
+  CRUISE_MPH_MIN,
+  CROSS_MPH_MAX,
+  CROSS_MPH_MIN,
+  DEFAULT_CONFIG,
+  sanitizeConfig,
+  type SimConfig,
+  type SpeedRegime,
+  type ViewMode,
+} from "@/lib/sim/geometry";
 
 export function CitySim() {
   const [view, setView] = useState<ViewMode>("split");
@@ -176,19 +187,20 @@ export function CitySim() {
               />
               <RangeField
                 label="Cruise speed"
-                display={`${viewConfig.cruiseMph} mph`}
-                min={90}
-                max={120}
+                display={`${viewConfig.cruiseMph} mph · ${CRUISE_MPH_MIN}–${CRUISE_MPH_MAX}`}
+                min={CRUISE_MPH_MIN}
+                max={CRUISE_MPH_MAX}
                 step={1}
                 testId="cruise-speed"
+                emphasize
                 value={viewConfig.cruiseMph}
                 onChange={(v) => patch({ cruiseMph: v })}
               />
               <RangeField
                 label="Crossing speed"
                 display={`${viewConfig.crossMph} mph`}
-                min={30}
-                max={55}
+                min={CROSS_MPH_MIN}
+                max={CROSS_MPH_MAX}
                 step={1}
                 value={viewConfig.crossMph}
                 onChange={(v) => patch({ crossMph: v })}
@@ -218,7 +230,7 @@ export function CitySim() {
                 label="Today vs tomorrow speeds"
                 hint={
                   viewConfig.speedRegime === "vision"
-                    ? `Lights stay at ${viewConfig.lightsMph} mph. Slots cruise at ${viewConfig.cruiseMph}, cross at ${viewConfig.crossMph}.`
+                    ? `Lights stay at ${viewConfig.lightsMph} mph. Slots cruise at ${viewConfig.cruiseMph} (default ${CRUISE_MPH_DEFAULT}), cross at ${viewConfig.crossMph}.`
                     : "Both sides use the same cruise and crossing speeds."
                 }
                 checked={viewConfig.speedRegime === "vision"}
@@ -320,6 +332,7 @@ function RangeField({
   value,
   onChange,
   testId,
+  emphasize = false,
 }: {
   label: string;
   display: string;
@@ -329,12 +342,21 @@ function RangeField({
   value: number;
   onChange: (value: number) => void;
   testId?: string;
+  emphasize?: boolean;
 }) {
+  const clamped = Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min;
   return (
     <label className="block space-y-2">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-zinc-200">{label}</span>
-        <span className="font-mono text-xs text-cyan-200/80" data-testid={testId}>
+        <span
+          data-testid={testId}
+          className={
+            emphasize
+              ? "rounded-md bg-black/70 px-2 py-0.5 font-mono text-sm font-semibold tracking-[0.22em] text-cyan-50 tabular-nums"
+              : "font-mono text-xs tracking-wide text-cyan-200 tabular-nums"
+          }
+        >
           {display}
         </span>
       </div>
@@ -343,8 +365,11 @@ function RangeField({
         min={min}
         max={max}
         step={step}
-        value={Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min}
+        value={clamped}
         autoComplete="off"
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={clamped}
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-cyan-300"
       />
