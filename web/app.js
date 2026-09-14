@@ -9,6 +9,10 @@ const playbookEl = document.getElementById("playbook");
 const catalogEl = document.getElementById("catalog-line");
 const clockEl = document.getElementById("clock");
 
+window.requestIdleCallback ||= (cb) =>
+  window.setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 16 }), 1);
+window.cancelIdleCallback ||= (id) => window.clearTimeout(id);
+
 const KIND_COLOR = {
   car: "#d7e4d9",
   bus: "#7eb6c9",
@@ -21,28 +25,17 @@ const METRO_BOUNDS = [
   [-87.02, 42.5],
 ];
 
-const map = new maplibregl.Map({
-  container: "map",
-  style: {
-    version: 8,
-    sources: {
-      carto: {
-        type: "raster",
-        tiles: ["https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        attribution: "© OpenStreetMap © CARTO",
-      },
-    },
-    layers: [{ id: "carto", type: "raster", source: "carto" }],
-  },
-  center: [-88.147, 41.75],
-  zoom: 12.4,
-});
-
-let socket;
+let map = null;
+let mapReady = false;
+let socket = null;
 let cityLoaded = false;
 let view = "street";
 let overlay = null;
+let city = null;
+
+function mapLive() {
+  return Boolean(map && mapReady);
+}
 
 function setError(msg) {
   if (!msg) {
@@ -73,6 +66,7 @@ function setView(next) {
   view = next;
   document.getElementById("view-street").classList.toggle("on", view === "street");
   document.getElementById("view-metro").classList.toggle("on", view === "metro");
+  if (!mapLive()) return;
   const metro = view === "metro";
   if (map.getLayer("corridors")) map.setPaintProperty("corridors", "line-opacity", metro ? 0.9 : 0.4);
   if (map.getLayer("rings")) map.setPaintProperty("rings", "fill-opacity", metro ? 0.07 : 0.03);
@@ -86,6 +80,122 @@ function setView(next) {
   }
 }
 
+function applyCityToMap(payload) {
+  if (!mapLive() || !payload) return;
+  if (payload.origin_lonlat) map.setCenter(payload.origin_lonlat);
+  if (map.getSource("roads")) {
+    map.getSource("roads").setData(payload.roads);
+    return;
+  }
+  map.addSource("roads", { type: "geojson", data: payload.roads });
+  map.addLayer({
+    id: "roads",
+    type: "line",
+    source: "roads",
+    paint: { "line-color": "#6fa86a", "line-width": 1.5, "line-opacity": 0.55 },
+  });
+  map.addSource("vehicles", { type: "geojson", data: emptyFc() });
+  map.addLayer({
+    id: "vehicles",
+    type: "circle",
+    source: "vehicles",
+    paint: {
+      "circle-radius": ["match", ["get", "kind"], "bus", 5.5, "emergency", 6, 3.4],
+      "circle-color": [
+        "match",
+        ["get", "kind"],
+        "bus",
+        KIND_COLOR.bus,
+        "emergency",
+        KIND_COLOR.emergency,
+        "delivery",
+        KIND_COLOR.delivery,
+        KIND_COLOR.car,
+      ],
+      "circle-stroke-width": 0.6,
+      "circle-stroke-color": "#132016",
+    },
+  });
+  map.addSource("intersections", { type: "geojson", data: emptyFc() });
+  map.addLayer({
+    id: "intersections",
+    type: "circle",
+    source: "intersections",
+    paint: {
+      "circle-radius": ["case", ["get", "had_signals"], 4.8, 3.1],
+      "circle-color": ["case", ["get", "had_signals"], "#c4894a", "#8fbf6a"],
+      "circle-opacity": 0.9,
+    },
+  });
+}
+
+function applyOverlayToMap(payload) {
+  if (!mapLive() || !payload) return;
+  if (!map.getSource("rings")) {
+    map.addSource("rings", { type: "geojson", data: payload.rings });
+    map.addLayer({
+      id: "rings",
+      type: "fill",
+      source: "rings",
+      paint: { "fill-color": ["get", "color"], "fill-opacity": 0.05 },
+    });
+    map.addLayer({
+      id: "rings-line",
+      type: "line",
+      source: "rings",
+      paint: { "line-color": ["get", "color"], "line-width": 1.2, "line-opacity": 0.45 },
+    });
+    map.addSource("tracker", { type: "geojson", data: payload.tracker });
+    map.addLayer({
+      id: "tracker",
+      type: "fill",
+      source: "tracker",
+      paint: { "fill-color": "#c4894a", "fill-opacity": 0.08 },
+    });
+    map.addSource("corridors", { type: "geojson", data: payload.corridors });
+    map.addLayer({
+      id: "corridors",
+      type: "line",
+      source: "corridors",
+      paint: {
+        "line-color": "#c4894a",
+        "line-width": ["case", ["==", ["get", "mode"], "rail"], 2.2, 4.2],
+        "line-opacity": 0.85,
+      },
+    });
+    map.addSource("districts", { type: "geojson", data: payload.districts });
+    map.addLayer({
+      id: "districts",
+      type: "circle",
+      source: "districts",
+      paint: {
+        "circle-radius": ["case", ["==", ["get", "role"], "job"], 7, 5.5],
+        "circle-color": ["case", ["==", ["get", "role"], "job"], "#e8c56b", "#8fbf6a"],
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#132016",
+      },
+    });
+    map.addSource("lights", { type: "geojson", data: payload.lights });
+    map.addLayer({
+      id: "lights",
+      type: "circle",
+      source: "lights",
+      paint: {
+        "circle-radius": 2.1,
+        "circle-color": "#e8c56b",
+        "circle-opacity": 0.55,
+      },
+      minzoom: 13,
+    });
+    return;
+  }
+  map.getSource("rings").setData(payload.rings);
+  map.getSource("corridors").setData(payload.corridors);
+  map.getSource("districts").setData(payload.districts);
+  map.getSource("tracker").setData(payload.tracker);
+  map.getSource("lights").setData(payload.lights);
+}
+
 async function loadCity() {
   statusEl.textContent = "Loading Naperville streets and metro overlays…";
   const [cityRes, regionRes, catalogRes, playRes] = await Promise.all([
@@ -95,123 +205,12 @@ async function loadCity() {
     fetch("/playbook"),
   ]);
   if (!cityRes.ok) throw new Error("City layers failed to load");
-  const city = await cityRes.json();
+  city = await cityRes.json();
   overlay = regionRes.ok ? await regionRes.json() : null;
-  if (city.origin_lonlat) map.setCenter(city.origin_lonlat);
-
-  if (map.getSource("roads")) {
-    map.getSource("roads").setData(city.roads);
-  } else {
-    map.addSource("roads", { type: "geojson", data: city.roads });
-    map.addLayer({
-      id: "roads",
-      type: "line",
-      source: "roads",
-      paint: { "line-color": "#6fa86a", "line-width": 1.5, "line-opacity": 0.55 },
-    });
-    map.addSource("vehicles", { type: "geojson", data: emptyFc() });
-    map.addLayer({
-      id: "vehicles",
-      type: "circle",
-      source: "vehicles",
-      paint: {
-        "circle-radius": ["match", ["get", "kind"], "bus", 5.5, "emergency", 6, 3.4],
-        "circle-color": [
-          "match",
-          ["get", "kind"],
-          "bus",
-          KIND_COLOR.bus,
-          "emergency",
-          KIND_COLOR.emergency,
-          "delivery",
-          KIND_COLOR.delivery,
-          KIND_COLOR.car,
-        ],
-        "circle-stroke-width": 0.6,
-        "circle-stroke-color": "#132016",
-      },
-    });
-    map.addSource("intersections", { type: "geojson", data: emptyFc() });
-    map.addLayer({
-      id: "intersections",
-      type: "circle",
-      source: "intersections",
-      paint: {
-        "circle-radius": ["case", ["get", "had_signals"], 4.8, 3.1],
-        "circle-color": ["case", ["get", "had_signals"], "#c4894a", "#8fbf6a"],
-        "circle-opacity": 0.9,
-      },
-    });
-  }
-
-  if (overlay) {
-    if (!map.getSource("rings")) {
-      map.addSource("rings", { type: "geojson", data: overlay.rings });
-      map.addLayer({
-        id: "rings",
-        type: "fill",
-        source: "rings",
-        paint: { "fill-color": ["get", "color"], "fill-opacity": 0.05 },
-      });
-      map.addLayer({
-        id: "rings-line",
-        type: "line",
-        source: "rings",
-        paint: { "line-color": ["get", "color"], "line-width": 1.2, "line-opacity": 0.45 },
-      });
-      map.addSource("tracker", { type: "geojson", data: overlay.tracker });
-      map.addLayer({
-        id: "tracker",
-        type: "fill",
-        source: "tracker",
-        paint: { "fill-color": "#c4894a", "fill-opacity": 0.08 },
-      });
-      map.addSource("corridors", { type: "geojson", data: overlay.corridors });
-      map.addLayer({
-        id: "corridors",
-        type: "line",
-        source: "corridors",
-        paint: {
-          "line-color": "#c4894a",
-          "line-width": ["case", ["==", ["get", "mode"], "rail"], 2.2, 4.2],
-          "line-opacity": 0.85,
-        },
-      });
-      map.addSource("districts", { type: "geojson", data: overlay.districts });
-      map.addLayer({
-        id: "districts",
-        type: "circle",
-        source: "districts",
-        paint: {
-          "circle-radius": ["case", ["==", ["get", "role"], "job"], 7, 5.5],
-          "circle-color": ["case", ["==", ["get", "role"], "job"], "#e8c56b", "#8fbf6a"],
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "#132016",
-        },
-      });
-      map.addSource("lights", { type: "geojson", data: overlay.lights });
-      map.addLayer({
-        id: "lights",
-        type: "circle",
-        source: "lights",
-        paint: {
-          "circle-radius": 2.1,
-          "circle-color": "#e8c56b",
-          "circle-opacity": 0.55,
-        },
-        minzoom: 13,
-      });
-    } else {
-      map.getSource("rings").setData(overlay.rings);
-      map.getSource("corridors").setData(overlay.corridors);
-      map.getSource("districts").setData(overlay.districts);
-      map.getSource("tracker").setData(overlay.tracker);
-      map.getSource("lights").setData(overlay.lights);
-    }
-    paintRings(overlay.twin);
-  }
-
   cityLoaded = true;
+  applyCityToMap(city);
+  applyOverlayToMap(overlay);
+  if (overlay?.twin) paintRings(overlay.twin);
   const counts = city.counts || {};
   statusEl.textContent = `${counts.intersections || "—"} slot pads · ${counts.roads || "—"} road ways`;
 
@@ -263,15 +262,13 @@ function paintTwin(twin) {
     corridorsEl.appendChild(li);
   }
 
-  if (map.getSource("corridors") && overlay?.corridors) {
+  if (mapLive() && map.getSource("corridors") && overlay?.corridors) {
     const byId = Object.fromEntries((twin.corridors || []).map((c) => [c.id, c]));
     const next = {
       type: "FeatureCollection",
       features: overlay.corridors.features.map((feat) => {
         const live = byId[feat.properties.id];
-        return live
-          ? { ...feat, properties: { ...feat.properties, ...live } }
-          : feat;
+        return live ? { ...feat, properties: { ...feat.properties, ...live } } : feat;
       }),
     };
     map.getSource("corridors").setData(next);
@@ -289,11 +286,13 @@ function paintTwin(twin) {
 }
 
 function paintSnapshot(snap) {
-  if (!cityLoaded || !map.getSource("vehicles")) return;
-  map.getSource("vehicles").setData(asFc(snap.vehicles, (v) => ({ kind: v.kind, speed: v.speed_mph })));
-  map.getSource("intersections").setData(
-    asFc(snap.intersections, (i) => ({ had_signals: i.had_signals, pending: i.pending }))
-  );
+  if (!snap?.metrics) return;
+  if (mapLive() && map.getSource("vehicles")) {
+    map.getSource("vehicles").setData(asFc(snap.vehicles, (v) => ({ kind: v.kind, speed: v.speed_mph })));
+    map.getSource("intersections").setData(
+      asFc(snap.intersections, (i) => ({ had_signals: i.had_signals, pending: i.pending }))
+    );
+  }
   const m = snap.metrics;
   document.getElementById("m-active").textContent = String(m.active);
   document.getElementById("m-done").textContent = String(m.completed);
@@ -333,15 +332,64 @@ function paintSnapshot(snap) {
 }
 
 function connectWs() {
+  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
   const proto = location.protocol === "https:" ? "wss" : "ws";
   socket = new WebSocket(`${proto}://${location.host}/ws`);
   socket.onopen = () => setError("");
   socket.onerror = () => setError("Lost the city runtime. Refresh, or restart with smartcity serve.");
   socket.onclose = () => {
+    socket = null;
     statusEl.textContent = "Runtime disconnected";
     setTimeout(connectWs, 1500);
   };
   socket.onmessage = (ev) => paintSnapshot(JSON.parse(ev.data));
+}
+
+function tryMakeMap() {
+  if (typeof maplibregl === "undefined") {
+    statusEl.textContent = "MapLibre failed to load — live clock still running.";
+    return;
+  }
+  try {
+    map = new maplibregl.Map({
+      container: "map",
+      // WebGL2 only. MapLibre 4's WebGPU/WGSL path dies in software browsers.
+      canvasContextAttributes: {
+        antialias: false,
+        failIfMajorPerformanceCaveat: false,
+        contextType: "webgl2",
+      },
+      style: {
+        version: 8,
+        sources: {
+          carto: {
+            type: "raster",
+            tiles: ["https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "© OpenStreetMap © CARTO",
+          },
+        },
+        layers: [{ id: "carto", type: "raster", source: "carto" }],
+      },
+      center: [-88.147, 41.75],
+      zoom: 12.4,
+    });
+    map.on("load", () => {
+      mapReady = true;
+      applyCityToMap(city);
+      applyOverlayToMap(overlay);
+    });
+    map.on("error", (ev) => {
+      const err = ev?.error || ev;
+      console.warn("map error", err);
+      if (!mapReady) {
+        statusEl.textContent = "Map renderer unavailable — live clock still running.";
+      }
+    });
+  } catch (err) {
+    map = null;
+    statusEl.textContent = "Map renderer unavailable — live clock still running.";
+  }
 }
 
 document.getElementById("controls").addEventListener("submit", async (e) => {
@@ -371,12 +419,15 @@ document.getElementById("pause").addEventListener("click", async () => {
 document.getElementById("view-street").addEventListener("click", () => setView("street"));
 document.getElementById("view-metro").addEventListener("click", () => setView("metro"));
 
-map.on("load", async () => {
+async function boot() {
+  tryMakeMap();
   try {
     await loadCity();
-    connectWs();
   } catch (err) {
     setError(err.message);
     statusEl.textContent = "City data is not available yet.";
   }
-});
+  connectWs();
+}
+
+boot();
