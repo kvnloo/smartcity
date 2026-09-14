@@ -1,11 +1,11 @@
 import "./styles.css";
 import type { Map as MapLibreMap } from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { lookdevPath } from "./camera";
 import { mountMosaic } from "./fallback";
-import { fidelityLine, formatClock, hottestCorridor, laneLine, ttiTone, type TwinLookdev } from "./hud";
+import { fidelityLine, formatClock, hottestCorridor, laneLine, lodChipLine, ttiTone, type TwinLookdev } from "./hud";
 import { lodConfig, readDeviceHints } from "./lod";
-import { lookdevStyle } from "./style";
+import { corridorLayers, districtLayers, ringLayers } from "./overlays";
+import { lookdevStyle, TERRAIN_EXAGGERATION } from "./style";
 import { ESRI_IMAGERY } from "./tiles";
 
 window.requestIdleCallback ||= ((cb: IdleRequestCallback) =>
@@ -23,7 +23,7 @@ const hotEl = document.getElementById("hot")!;
 const fidelityEl = document.getElementById("fidelity")!;
 const fallbackEl = document.getElementById("fallback")!;
 
-lodChip.textContent = `LOD · ${lod.tier} · lookdev`;
+lodChip.textContent = lodChipLine(lod.tier);
 
 type TwinPayload = TwinLookdev & {
   geo: {
@@ -75,76 +75,15 @@ function showMosaic(origin: [number, number], reason: string) {
 
 function overlayTwin(map: MapLibreMap, twin: TwinPayload) {
   map.addSource("corridors", { type: "geojson", data: twin.geo.corridors });
-  map.addLayer({
-    id: "corridors-glow",
-    type: "line",
-    source: "corridors",
-    paint: {
-      "line-color": ["case", ["==", ["get", "mode"], "rail"], "#f0d78a", "#e0a36a"],
-      "line-width": ["interpolate", ["linear"], ["zoom"], 8, 4, 14, 10],
-      "line-opacity": 0.22,
-      "line-blur": 2,
-    },
-  });
-  map.addLayer({
-    id: "corridors",
-    type: "line",
-    source: "corridors",
-    paint: {
-      "line-color": ["case", ["==", ["get", "mode"], "rail"], "#e8c56b", "#c4894a"],
-      "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.2, 14, 3.2],
-      "line-opacity": 0.92,
-    },
-  });
+  for (const layer of corridorLayers()) map.addLayer(layer);
 
   if (twin.geo.rings) {
     map.addSource("rings", { type: "geojson", data: twin.geo.rings });
-    map.addLayer({
-      id: "rings",
-      type: "line",
-      source: "rings",
-      paint: {
-        "line-color": ["coalesce", ["get", "color"], "#e8c56b"],
-        "line-width": 1.15,
-        "line-opacity": 0.45,
-        "line-dasharray": [1.2, 1.4],
-      },
-    });
+    for (const layer of ringLayers()) map.addLayer(layer);
   }
 
   map.addSource("districts", { type: "geojson", data: twin.geo.districts });
-  map.addLayer({
-    id: "districts",
-    type: "circle",
-    source: "districts",
-    minzoom: 7,
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 3, 12, 5.5],
-      "circle-color": ["case", ["==", ["get", "role"], "job"], "#e8c56b", "#8fbf6a"],
-      "circle-stroke-width": 1,
-      "circle-stroke-color": "#132016",
-      "circle-opacity": 0.9,
-    },
-  });
-  map.addLayer({
-    id: "district-names",
-    type: "symbol",
-    source: "districts",
-    minzoom: 8,
-    layout: {
-      "text-field": ["get", "name"],
-      "text-font": ["Noto Sans Regular"],
-      "text-size": ["interpolate", ["linear"], ["zoom"], 8, 10, 13, 13],
-      "text-offset": [0, 1.15],
-      "text-anchor": "top",
-      "text-padding": 2,
-    },
-    paint: {
-      "text-color": "#f4efe6",
-      "text-halo-color": "#0b120f",
-      "text-halo-width": 1.2,
-    },
-  });
+  for (const layer of districtLayers()) map.addLayer(layer);
 }
 
 function flyPath(map: MapLibreMap) {
@@ -177,10 +116,11 @@ async function boot() {
   paintHud(twin);
 
   if (!webglAvailable()) {
-    showMosaic(twin.origin, "No WebGL — Esri mosaic. Full sim is Unreal/Unity + Blender, not this page.");
+    showMosaic(twin.origin, "No WebGL — Esri mosaic. Full sim is Unreal + SUMO, not this page.");
     return;
   }
 
+  await import("maplibre-gl/dist/maplibre-gl.css");
   const maplibregl = (await import("maplibre-gl")).default;
 
   const map = new maplibregl.Map({
@@ -188,7 +128,7 @@ async function boot() {
     style: lookdevStyle(lod),
     center: twin.origin,
     zoom: 15.1,
-    pitch: Math.min(62, lod.maxPitch),
+    pitch: Math.min(70, lod.maxPitch),
     bearing: -28,
     maxPitch: lod.maxPitch,
     maxZoom: lod.maxZoom,
@@ -216,7 +156,7 @@ async function boot() {
 
   map.on("load", () => {
     if (lod.terrain && map.getSource("terrain")) {
-      map.setTerrain({ source: "terrain", exaggeration: 1.18 });
+      map.setTerrain({ source: "terrain", exaggeration: TERRAIN_EXAGGERATION });
     }
     overlayTwin(map, twin);
     statusEl.textContent =

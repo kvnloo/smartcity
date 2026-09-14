@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fidelityLine, formatClock, hottestCorridor, laneLine, ttiTone } from "./hud";
+import { fidelityLine, formatClock, hottestCorridor, laneLine, lodChipLine, ttiTone } from "./hud";
 
 describe("hud", () => {
   it("formats the world clock", () => {
@@ -31,5 +31,28 @@ describe("hud", () => {
         { name: "micro", engine: "sumo + slot AIM" },
       ]),
     ).toBe("hero Unreal · micro SUMO");
+  });
+
+  it("keeps fidelity mixed-case — never an uppercase LOD clone", () => {
+    const line = fidelityLine([
+      { name: "hero", engine: "unreal_nanite + blender_mesh" },
+      { name: "micro", engine: "sumo + slot AIM" },
+      { name: "meso", engine: "sumo meso / CTM" },
+      { name: "macro", engine: "od_flow" },
+    ]);
+    expect(line).toMatch(/^hero Unreal · micro SUMO/);
+    expect(line).not.toBe(line.toUpperCase());
+    expect(line.startsWith("HERO")).toBe(false);
+  });
+
+  it("prints only the device LOD tier on the chip", () => {
+    expect(lodChipLine("ultra")).toBe("LOD · ultra");
+    expect(lodChipLine("ultra")).not.toMatch(/unreal|sumo|hero|micro|fidelity/i);
+    expect(lodChipLine("ultra")).not.toBe(
+      fidelityLine([
+        { name: "hero", engine: "unreal_nanite" },
+        { name: "micro", engine: "sumo" },
+      ]),
+    );
   });
 });
