@@ -47,7 +47,8 @@ describe("hud", () => {
 
   it("prints only the device LOD tier on the chip", () => {
     expect(lodChipLine("ultra")).toBe("LOD · ultra");
-    expect(lodChipLine("ultra")).not.toMatch(/unreal|sumo|hero|micro|fidelity/i);
+    expect(lodChipLine("low")).toBe("LOD · low");
+    expect(lodChipLine("low")).not.toMatch(/lookdev|unity|unreal|sumo/i);
     expect(lodChipLine("ultra")).not.toBe(
       fidelityLine([
         { name: "hero", engine: "unreal_nanite" },

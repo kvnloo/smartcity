@@ -48,6 +48,15 @@ describe("lookdev chrome", () => {
     expect(css).toMatch(/min\(28dvh,\s*236px\)/);
   });
 
+  it("never names Unity on the mosaic fallback or fine print", () => {
+    expect(html).not.toMatch(/Unity/i);
+    expect(main).not.toMatch(/Unity/i);
+    expect(html).toMatch(/Unreal \+ SUMO/);
+    expect(main).toMatch(/Unreal \+ SUMO/);
+    expect(main).toMatch(/lodChipLine/);
+    expect(main).not.toMatch(/LOD · \$\{lod\.tier\} · lookdev/);
+  });
+
   it("code-splits MapLibre and never pulls Google tiles or a SUMO runtime", () => {
     expect(main).toMatch(/await import\(\s*["']maplibre-gl["']\s*\)/);
     expect(main).toMatch(/import\(\s*["']maplibre-gl\/dist\/maplibre-gl\.css["']\s*\)/);

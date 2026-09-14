@@ -1,4 +1,4 @@
-/** Device-aware LOD. Mobile lookdev is not the Unreal/Unity/Blender sim. */
+/** Device-aware LOD. Mobile lookdev is not the Unreal + SUMO twin. */
 
 export type LodTier = "low" | "medium" | "ultra";
 
