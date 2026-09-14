@@ -107,7 +107,8 @@ export class TrafficSim {
   }
 
   step(dt: number): void {
-    if (dt <= 0 || dt > 0.08) return;
+    if (dt <= 0) return;
+    if (dt > 0.05) dt = 0.05;
     this.time += dt;
     this.spawn(dt);
     if (this.config.mode === "slot") {

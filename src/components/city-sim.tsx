@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
-import { SimCanvas } from "@/components/sim-canvas";
+import { IntersectionView } from "@/components/intersection-view";
 import { PaperPanel } from "@/components/paper-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,30 +11,38 @@ import { Switch } from "@/components/ui/switch";
 import { TrafficSim, type SimSnapshot } from "@/lib/sim/engine";
 import { DEFAULT_CONFIG, type SimConfig, type SpeedRegime, type ViewMode } from "@/lib/sim/geometry";
 
-const EMPTY: SimSnapshot = {
-  time: 0,
-  cars: [],
-  mode: "slot",
-  light: "NS_GREEN",
-  collisions: 0,
-  completed: 0,
-  stopped: 0,
-  meanMph: 0,
-  throughputPerHour: 0,
-  meanDelay: 0,
-  queueMeters: 0,
-};
-
 export function CitySim() {
   const [view, setView] = useState<ViewMode>("split");
   const [paused, setPaused] = useState(false);
   const [zoom, setZoom] = useState(3.4);
   const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
-  const [slotStats, setSlotStats] = useState<SimSnapshot>(EMPTY);
-  const [lightStats, setLightStats] = useState<SimSnapshot>(EMPTY);
   const seedRef = useRef(7);
-  const slotSimRef = useRef(makeSim("slot", 7));
-  const lightSimRef = useRef(makeSim("lights", 7));
+  const pausedRef = useRef(false);
+  const configRef = useRef(config);
+  const [bundle] = useState(() => {
+    const slot = makeSim("slot", 7);
+    const lights = makeSim("lights", 7);
+    return {
+      slot,
+      lights,
+      slotStats: slot.snapshot(),
+      lightStats: lights.snapshot(),
+    };
+  });
+  const slotSimRef = useRef(bundle.slot);
+  const lightSimRef = useRef(bundle.lights);
+  const [slotStats, setSlotStats] = useState<SimSnapshot>(bundle.slotStats);
+  const [lightStats, setLightStats] = useState<SimSnapshot>(bundle.lightStats);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+
+  useEffect(() => {
+    configRef.current = config;
+    slotSimRef.current.setConfig({ ...config, mode: "slot" });
+    lightSimRef.current.setConfig({ ...config, mode: "lights" });
+  }, [config]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -47,14 +55,31 @@ export function CitySim() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const scale = configRef.current.timeScale;
+      const dt = 0.04 * scale;
+      if (!pausedRef.current) {
+        const n = 2;
+        for (let i = 0; i < n; i++) {
+          slotSimRef.current.step(dt / n);
+          lightSimRef.current.step(dt / n);
+        }
+      }
+      setSlotStats(slotSimRef.current.snapshot());
+      setLightStats(lightSimRef.current.snapshot());
+    }, 50);
+    return () => window.clearInterval(id);
+  }, []);
+
   const reset = () => {
     seedRef.current += 1;
     slotSimRef.current.reset(seedRef.current);
     lightSimRef.current.reset(seedRef.current);
     slotSimRef.current.setConfig({ ...config, mode: "slot" });
     lightSimRef.current.setConfig({ ...config, mode: "lights" });
-    slotSimRef.current.warmup(20);
-    lightSimRef.current.warmup(20);
+    slotSimRef.current.warmup(12);
+    lightSimRef.current.warmup(12);
     setSlotStats(slotSimRef.current.snapshot());
     setLightStats(lightSimRef.current.snapshot());
   };
@@ -96,24 +121,18 @@ export function CitySim() {
           <div className={`grid min-h-[440px] flex-1 gap-3 ${showSlot && showLights ? "lg:grid-cols-2" : ""}`}>
             <SimPane
               className={showLights ? "" : "hidden"}
-              simRef={lightSimRef}
               config={{ ...config, mode: "lights" }}
-              paused={paused}
               zoom={zoom}
               label="Traffic lights"
               stats={lightStats}
-              onStats={setLightStats}
               empty={config.arrivalPerLane <= 0.01}
             />
             <SimPane
               className={showSlot ? "" : "hidden"}
-              simRef={slotSimRef}
               config={{ ...config, mode: "slot" }}
-              paused={paused}
               zoom={zoom}
               label="Slot-based weave"
               stats={slotStats}
-              onStats={setSlotStats}
               empty={config.arrivalPerLane <= 0.01}
             />
           </div>
@@ -224,37 +243,24 @@ export function CitySim() {
 }
 
 function SimPane({
-  simRef,
   config,
-  paused,
   zoom,
   label,
   stats,
-  onStats,
   empty,
   className,
 }: {
-  simRef: RefObject<TrafficSim>;
   config: SimConfig;
-  paused: boolean;
   zoom: number;
   label: string;
   stats: SimSnapshot;
-  onStats: (s: SimSnapshot) => void;
   empty: boolean;
   className?: string;
 }) {
   return (
     <div className={className}>
       <div className="relative">
-        <SimCanvas
-          simRef={simRef}
-          config={config}
-          paused={paused}
-          zoom={zoom}
-          label={label}
-          onStats={onStats}
-        />
+        <IntersectionView snapshot={stats} zoom={zoom} label={label} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Stat k="Throughput" v={`${Math.round(stats.throughputPerHour)} /h`} />
@@ -263,16 +269,16 @@ function SimPane({
             <Stat k="Delay" v={`${stats.meanDelay.toFixed(1)} s`} />
           </div>
         </div>
-      {empty ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm text-zinc-300">
-          No traffic — raise density to spawn cars.
-        </div>
-      ) : null}
-      {stats.collisions > 0 && config.mode === "slot" ? (
-        <div className="absolute top-14 left-3 rounded-md bg-red-500/20 px-2 py-1 text-xs text-red-100">
-          {stats.collisions} overlapping paths
-        </div>
-      ) : null}
+        {empty ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm text-zinc-300">
+            No traffic — raise density to spawn cars.
+          </div>
+        ) : null}
+        {stats.collisions > 0 && config.mode === "slot" ? (
+          <div className="absolute top-14 left-3 rounded-md bg-red-500/20 px-2 py-1 text-xs text-red-100">
+            {stats.collisions} overlapping paths
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -289,7 +295,7 @@ function Stat({ k, v }: { k: string; v: string }) {
 
 function makeSim(mode: "slot" | "lights", seed: number): TrafficSim {
   const sim = new TrafficSim({ ...DEFAULT_CONFIG, mode }, seed);
-  sim.warmup(20);
+  sim.warmup(12);
   return sim;
 }
 
