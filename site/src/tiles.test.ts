@@ -27,4 +27,11 @@ describe("mosaic", () => {
       "https://example/15/12194/8360",
     );
   });
+
+  it("never points at Google tile hosts", async () => {
+    const tiles = await import("./tiles");
+    for (const u of [tiles.ESRI_IMAGERY, tiles.S2_CLOUDLESS, tiles.TERRARIUM_DEM, tiles.OSM_TILEJSON]) {
+      expect(u).not.toMatch(/google|gstatic|googleapis/i);
+    }
+  });
 });

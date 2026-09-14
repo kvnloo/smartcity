@@ -49,6 +49,11 @@ export function ttiTone(tti: number): "clear" | "busy" | "jam" {
   return "clear";
 }
 
+/** Device LOD pill. Never the nested-engine strip — that is `#fidelity`. */
+export function lodChipLine(tier: string): string {
+  return `LOD · ${tier}`;
+}
+
 export function fidelityLine(rings: FidelityRing[] = []): string {
   const shortEngine = (engine: string): string => {
     const raw = engine.split(/[+]/)[0]!.trim().toLowerCase();
