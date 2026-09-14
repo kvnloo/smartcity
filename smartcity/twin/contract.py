@@ -183,7 +183,12 @@ class LaneClockSnapshot(ContractModel):
 class VehiclePose(ContractModel):
     """One hero/micro vehicle. A few hundred of these, not inbound_vph."""
 
-    id: int = Field(description="Stable for the lifetime of this vehicle in the current run.")
+    id: str = Field(
+        description=(
+            "Stable for the lifetime of this vehicle in the current run. "
+            "SUMO TraCI ids are strings (m1). In-process CitySim integer ids coerce to strings."
+        )
+    )
     kind: VehicleKind
     lon: float = Field(description="WGS84 degrees.")
     lat: float = Field(description="WGS84 degrees.")
@@ -244,6 +249,9 @@ class LaborSnapshot(ContractModel):
     staffed_roles_removed: list[str]
 
 
+WsSource = Literal["sumo", "mock", "inproc"]
+
+
 class WsSnapshot(ContractModel):
     """WS /ws and GET /snapshot — live Naperville poses plus nested twin/zipper."""
 
@@ -256,6 +264,12 @@ class WsSnapshot(ContractModel):
     services: ServicesSnapshot
     labor: LaborSnapshot
     twin: TwinSnapshot
+    source: WsSource = Field(
+        default="inproc",
+        description="Who posed the cars. sumo = Eclipse TraCI, mock = posted-speed stand-in, inproc = CitySim bench.",
+    )
+    ring: RingName = Field(default="micro", description="Which nested ring this pose set belongs to.")
+    tick_s: float = Field(default=0.25, gt=0, description="Solver tick, seconds. Micro is 0.25.")
 
 
 DUMP_KW = {"mode": "json", "by_alias": True}

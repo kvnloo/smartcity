@@ -272,7 +272,7 @@ Same zipper rows as `twin.lanes`, plus clock math:
   "policy": "batch",
   "vehicles": [
     {
-      "id": 1,
+      "id": "1",
       "kind": "car",
       "lon": -88.103858,
       "lat": 41.756298,
@@ -282,7 +282,7 @@ Same zipper rows as `twin.lanes`, plus clock math:
       "heading": 90.9
     },
     {
-      "id": 2,
+      "id": "2",
       "kind": "car",
       "lon": -88.099926,
       "lat": 41.739586,
@@ -326,7 +326,7 @@ Same zipper rows as `twin.lanes`, plus clock math:
 }
 ```
 
-`kind` is `car` | `bus` | `emergency` | `delivery`. `policy` is `lights` | `fair` | `batch` | `aim`. Nested `twin` is a full `TwinSnapshot` (origin + zipper + rings). `metrics.active` is the live car count.
+`kind` is `car` | `bus` | `emergency` | `delivery`. `policy` is `lights` | `fair` | `batch` | `aim`. `id` is a **string**. Nested `twin` is a full `TwinSnapshot` (origin + zipper + rings). `metrics.active` is the live car count. `source` is `sumo` (Eclipse TraCI), `mock` (posted-speed stand-in), or `inproc` (CitySim bench). `ring` is `micro`. `tick_s` is `0.25`.
 
 `intersections[]` is hundreds of slot pads (graph nodes). Do **not** spawn an `AActor` per pad. Use pads inside ~80–120 m of the camera, or ignore them and only draw `/ws` vehicles.
 

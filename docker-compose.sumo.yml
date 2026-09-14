@@ -1,0 +1,30 @@
+# Default-off Eclipse SUMO sidecar. The API and GitHub Pages lookdev do not
+# start this. Host must write XML first:
+#   python3 scripts/build_sumo_net.py
+#   docker compose -f docker-compose.sumo.yml up --build
+services:
+  sumo:
+    build:
+      context: .
+      dockerfile: docker/sumo.Dockerfile
+    volumes:
+      - ./output/sumo:/net
+    working_dir: /net
+    ports:
+      - "127.0.0.1:8813:8813"
+    restart: "no"
+    command:
+      - bash
+      - -lc
+      - |
+        set -euo pipefail
+        if [ ! -f naperville.net.xml ]; then
+          if [ ! -f naperville.nod.xml ]; then
+            echo "output/sumo is empty. Run python3 scripts/build_sumo_net.py on the host first."
+            exit 1
+          fi
+          netconvert --node-files naperville.nod.xml --edge-files naperville.edg.xml \
+            --type-files naperville.typ.xml --connection-files naperville.con.xml \
+            --output-file naperville.net.xml --no-internal-links true --ignore-errors true
+        fi
+        exec sumo -c naperville.sumocfg --remote-port 8813 --step-length 0.25 --start --no-step-log true

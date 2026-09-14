@@ -67,18 +67,23 @@ Details: `output/gltf/README.md`.
 
 ## Talking to SUMO
 
-`python3 scripts/build_sumo_net.py` writes `output/sumo/naperville.nod.xml` and
-`.edg.xml`. With Eclipse SUMO installed:
+`python3 scripts/build_sumo_net.py` is the path to a compiled
+`output/sumo/naperville.net.xml` when Eclipse SUMO's **netconvert** is
+installed. It always writes nod/edg/typ/con XML, zipper connections, a 0.25 s
+`.sumocfg`, and `facilities.json` (Kennedy REVLAC real; I-88 / Ogden zippers
+`fictional`). Without SUMO, the TraCI **mock** in `smartcity.micro` still
+publishes `/ws` snapshots. Install: `docs/SUMO.md`.
 
 ```
 netconvert --node-files naperville.nod.xml --edge-files naperville.edg.xml \
+  --type-files naperville.typ.xml --connection-files naperville.con.xml \
   --output-file naperville.net.xml
 ```
 
-Run SUMO with TraCI. This backend remains the **slot clock** and **tidal
-operator**: at each 0.25 s, FastAPI publishes Kennedy / I-88 direction and
-BATCH reservations. A Unreal subsystem applies extra-lane meshes (move a
-barrier spline, do not rebuild the highway).
+Live TraCI: `SMARTCITY_SUMO=1 smartcity serve`. This backend remains the
+**slot clock** and **tidal operator**: at each 0.25 s it publishes Kennedy /
+I-88 direction and BATCH reservations. A Unreal subsystem applies extra-lane
+meshes (move a barrier spline, do not rebuild the highway).
 
 For the 40 km ring, convert Geofabrik Illinois (clipped) with
 `netconvert --osm-file` and `--keep-edges.by-vclass passenger`, then enable

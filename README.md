@@ -102,10 +102,13 @@ python3 scripts/ingest_open_data.py   # optional SODA / NOAA / poles
 smartcity serve --host 127.0.0.1 --port 43147
 smartcity twin --hour 7.5
 smartcity bench --seconds 25
-python3 scripts/build_sumo_net.py     # nod/edg; netconvert if SUMO is installed
+python3 scripts/build_sumo_net.py     # 8 km ring XML; netconvert → .net.xml if SUMO is installed
+smartcity micro --seconds 8           # TraCI if SUMO is up, else mock (pytest uses this)
 ```
 
-Open `http://127.0.0.1:43147`. Kennedy inbound at 07:30 is the default clock.
+Open `http://127.0.0.1:43147`. `/ws` is the micro-ring vehicle snapshot (SUMO or
+mock). Kennedy inbound at 07:30 is the default clock. SUMO install: [docs/SUMO.md](docs/SUMO.md).
+Do not put SUMO in `site/`.
 
 ## Blender → Unreal (hero mesh)
 
@@ -163,4 +166,4 @@ Unreal implements against the frozen live contract: **[docs/LIVE_CONTRACT.md](do
 | `GET /lights` | Naperville poles + Chicago spacing model |
 | `GET /playbook` | Solarpunk interventions |
 | `GET /snapshot` | One `/ws` frame over HTTP |
-| `WS /ws` | Live Naperville vehicles + twin clock |
+| `WS /ws` | Live micro-ring vehicles (SUMO TraCI or mock) + twin clock |

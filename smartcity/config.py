@@ -20,8 +20,14 @@ AIM_DT_S = 0.25
 # Urban speeds. The viral "90–120 mph" figure is not in the papers; arterials cap here.
 MPH_TO_MPS = 0.44704
 CRUISE_CAP_MPH = 45.0
+ARTERIAL_CAP_MPH = 45.0
+MOTORWAY_CAP_MPH = 55.0
 CROSSING_MPH = 35.0
 RESIDENTIAL_MPH = 25.0
+
+# 8 km micro ring. SUMO ticks this; Unreal only cameras it.
+MICRO_TICK_S = 0.25
+MICRO_RADIUS_KM = 8.0
 
 DEFAULT_ACCEL = 2.4  # m/s^2 comfortable AV
 DEFAULT_DECEL = 3.2

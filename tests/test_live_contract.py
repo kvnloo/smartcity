@@ -151,6 +151,7 @@ def test_ws_snapshot_validates_and_keeps_ops_map_keys():
     assert snap.twin.lanes[0].id == "kennedy-revlac"
     assert snap.metrics.active == len(snap.vehicles)
     for veh in snap.vehicles:
+        assert isinstance(veh.id, str)
         assert veh.kind in {"car", "bus", "emergency", "delivery"}
         assert veh.lon < -87.0
         assert veh.x_m != 0.0 or veh.y_m != 0.0
@@ -201,3 +202,9 @@ def test_fastapi_twin_lanes_and_openapi_use_the_models():
         assert city["origin_lonlat"]
         assert city["crs"] == "EPSG:32616"
         assert len(city["origin_utm"]) == 2
+        snap = client.get("/snapshot")
+        assert snap.status_code == 200
+        ws = parse_ws(snap.json())
+        assert ws.type == "snapshot"
+        assert ws.source in {"sumo", "mock", "inproc"}
+        assert ws.ring == "micro"

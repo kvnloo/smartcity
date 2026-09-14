@@ -141,7 +141,7 @@ class CitySim:
             lon, lat = lonlat(oe, on, v.x, v.y)
             vehicles.append(
                 {
-                    "id": v.id,
+                    "id": str(v.id),
                     "kind": v.kind,
                     "lon": round(lon, 6),
                     "lat": round(lat, 6),
