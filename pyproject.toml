@@ -1,0 +1,33 @@
+[project]
+name = "smartcity"
+version = "0.1.0"
+description = "Naperville slot-based autonomous intersection city runtime"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.32.0",
+  "pydantic>=2.9.0",
+  "networkx>=3.3",
+  "numpy>=2.0.0",
+  "shapely>=2.0.6",
+  "pyproj>=3.6.1",
+  "requests>=2.32.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3.0"]
+
+[project.scripts]
+smartcity = "smartcity.cli:main"
+
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["smartcity*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

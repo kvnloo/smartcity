@@ -1,0 +1,42 @@
+:root {
+  --ink: #e8f0ea;
+  --muted: #9aa89e;
+  --bg: #0c1210;
+  --panel: #141c18;
+  --line: #24332c;
+  --accent: #3dceae;
+  --warn: #e07a4a;
+  --bus: #7eb6ff;
+  --car: #d7e4d9;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 15px/1.45 "IBM Plex Sans", "Source Sans 3", sans-serif; }
+.top { padding: 1.1rem 1.4rem 0.6rem; border-bottom: 1px solid var(--line); display: grid; gap: 0.4rem; }
+.kicker { margin: 0; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.7rem; color: var(--accent); }
+h1 { margin: 0; font-size: 1.55rem; font-weight: 600; }
+.lede { margin: 0; max-width: 52rem; color: var(--muted); }
+.layout { display: grid; grid-template-columns: 1fr 22rem; min-height: calc(100vh - 7rem); }
+.map-wrap { position: relative; border-right: 1px solid var(--line); }
+#map { position: absolute; inset: 0; }
+.map-status { position: absolute; left: 0.8rem; bottom: 0.8rem; z-index: 2; background: #0c1210cc; padding: 0.35rem 0.6rem; font-size: 0.8rem; color: var(--muted); }
+.panel { padding: 1rem 1.1rem 2rem; overflow: auto; background: var(--panel); }
+.controls { display: grid; gap: 0.7rem; margin-bottom: 1rem; }
+label { display: grid; gap: 0.25rem; font-size: 0.78rem; color: var(--muted); }
+select, input { background: #0c1210; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 0.45rem 0.5rem; }
+.row { display: flex; gap: 0.5rem; }
+button { background: var(--accent); color: #06241c; border: 0; border-radius: 6px; padding: 0.5rem 0.75rem; font-weight: 600; cursor: pointer; }
+button#pause { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin: 0 0 1.1rem; }
+.metrics div { background: #0c1210; border: 1px solid var(--line); border-radius: 8px; padding: 0.45rem 0.55rem; }
+dt { font-size: 0.7rem; color: var(--muted); }
+dd { margin: 0.1rem 0 0; font-size: 1.05rem; }
+h2 { font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 1rem 0 0.4rem; }
+.labor, .events { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.35rem; }
+.labor li, .events li { font-size: 0.85rem; border-left: 2px solid var(--accent); padding: 0.2rem 0 0.2rem 0.55rem; }
+.events li { border-color: var(--bus); }
+.empty { color: var(--muted); border-color: var(--line) !important; }
+.error { background: #3a1c14; color: #ffd2c2; padding: 0.5rem 0.6rem; border-radius: 6px; margin-bottom: 0.7rem; }
+@media (max-width: 840px) {
+  .layout { grid-template-columns: 1fr; }
+  .map-wrap { min-height: 52vh; }
+}

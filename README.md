@@ -1,35 +1,53 @@
-# Light Traffic
+# SmartCity — Naperville slot network
 
-Interactive recreation of the autonomous-intersection idea from MIT Senseable City Lab’s 2016 paper **[Revisiting Street Intersections Using Slot-Based Systems](https://doi.org/10.1371/journal.pone.0149607)** (Tachet, Santi, Sobolevsky, Reyes-Castro, Frazzoli, Helbing, Ratti).
+City-scale runtime for a traffic-light-free Naperville: OpenStreetMap extract, the slot / AIM algorithms from the papers, a live operations map, a cinematic Next.js intersection, and Blender scripts that mesh the city.
 
-If every car is autonomous and talking to an intersection manager, traffic lights are optional. Vehicles request a time slot, slow on the approach, then thread the box at around **45 mph** while the next stream zips through the gaps. On the avenues they can cruise much faster — the **90–120 mph** picture people remember from the viral clips. That speed pair is a popular reading of an AV-only city, not a posted limit in the paper. The paper’s actual claim is about **capacity and delay**: a slot/batch controller can about **double** intersection throughput versus fixed lights and cut waiting far more, because the yellow “setup” shrinks to ~1.5 seconds.
+Vehicles request a time slot, bleed speed on the approach, and cross without a red phase. Emergency, transit, delivery, and pedestrian pulses ride the same reservation fabric — which is how the operations roster shrinks.
 
-This app puts that side by side with a conventional signal so you can see queues form on the left and a weave on the right.
+The 90–120 mph figure people remember from the viral clips is a popular reading of an AV-only city, not a posted limit in the papers. This runtime caps arterials at **45 mph**. The papers’ result is **not stopping**, and roughly **double** intersection capacity versus fixed lights.
 
-## Run locally
+## What’s in the repo
+
+| Piece | What it is |
+| --- | --- |
+| `smartcity/` | Python city OS: FAIR, BATCH, AIM, lights baseline, services, FastAPI |
+| `web/` | Live Naperville map (MapLibre) talking to the runtime |
+| `src/` | Next.js cinematic two-world intersection (slot weave vs lights) |
+| `blender_scripts/` | OSM → tiled `.blend` builder + RT research loop |
+| `data/processed/city.json` | Local-metre Naperville extract (UTM 16N) |
+
+Papers: Tachet et al., *PLOS ONE* 2016 ([doi](https://doi.org/10.1371/journal.pone.0149607)); Dresner & Stone, *JAIR* 2008; [MIT News](https://news.mit.edu/2016/no-traffic-lights-communicating-vehicles-intersections-more-efficiently-0317).
+
+## Run the Naperville city OS
+
+```bash
+python3 -m pip install -e ".[dev]"
+smartcity serve --host 127.0.0.1 --port 43147
+```
+
+Open `http://127.0.0.1:43147`. Switch FAIR / BATCH / AIM / lights from the panel.
+
+```bash
+smartcity bench --seconds 25
+pytest -q
+```
+
+## Cinematic intersection (Next.js)
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://127.0.0.1:43217](http://127.0.0.1:43217).
+Open `http://127.0.0.1:43217`.
 
-## What the controls do
+## Maps and Blender
 
-- **Split / Slot-based / Traffic lights** — compare or isolate each controller
-- **Density** — Poisson arrivals per lane
-- **Cruise / Crossing** — highway-block speed vs weave speed (slot side)
-- **Today vs tomorrow speeds** — lights stay at a 35 mph city limit, or both sides use the same numbers
-- **Camera** — zoom from the approach roads into the reserved tile grid
+```bash
+python3 scripts/fetch_naperville.py
+python3 scripts/process_city.py
+blender --background --python blender_scripts/build_city.py -- --preset tiled_500
+python3 scripts/research_loop.py
+```
 
-Space pauses. Reset reseeds both worlds together.
-
-## Papers
-
-- Tachet et al., *PLOS ONE* (2016): [doi:10.1371/journal.pone.0149607](https://doi.org/10.1371/journal.pone.0149607)
-- [MIT News write-up](https://news.mit.edu/2016/no-traffic-lights-communicating-vehicles-intersections-more-efficiently-0317)
-- Dresner & Stone, *JAIR* (2008), Autonomous Intersection Management — the tile-reservation weave this sim uses for the visual
-- [DriveWAVE](https://senseable.mit.edu/wave/) — Senseable City Lab’s later physical installation
-
-The 2016 model is a two-road analytical crossing with FAIR (FCFS) and BATCH (adaptive platoons) versus FIXED signals. It does not include pedestrians, cyclists, or mixed human traffic. One manually driven car would break the schedule.
+The research loop scores object count, triangles, and depsgraph time, then copies the winner to `output/blends/naperville_city.blend`.
