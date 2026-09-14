@@ -9,13 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { TrafficSim, type SimSnapshot } from "@/lib/sim/engine";
-import { DEFAULT_CONFIG, type SimConfig, type SpeedRegime, type ViewMode } from "@/lib/sim/geometry";
+import { DEFAULT_CONFIG, sanitizeConfig, type SimConfig, type SpeedRegime, type ViewMode } from "@/lib/sim/geometry";
 
 export function CitySim() {
   const [view, setView] = useState<ViewMode>("split");
   const [paused, setPaused] = useState(false);
   const [zoom, setZoom] = useState(3.05);
-  const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<SimConfig>(() => sanitizeConfig({ ...DEFAULT_CONFIG }));
   const seedRef = useRef(7);
   const pausedRef = useRef(false);
   const configRef = useRef(config);
@@ -39,9 +39,10 @@ export function CitySim() {
   }, [paused]);
 
   useEffect(() => {
-    configRef.current = config;
-    slotSimRef.current.setConfig({ ...config, mode: "slot" });
-    lightSimRef.current.setConfig({ ...config, mode: "lights" });
+    const next = sanitizeConfig(config);
+    configRef.current = next;
+    slotSimRef.current.setConfig({ ...next, mode: "slot" });
+    lightSimRef.current.setConfig({ ...next, mode: "lights" });
   }, [config]);
 
   useEffect(() => {
@@ -72,12 +73,14 @@ export function CitySim() {
     return () => window.clearInterval(id);
   }, []);
 
+  const viewConfig = sanitizeConfig(config);
+
   const reset = () => {
     seedRef.current += 1;
     slotSimRef.current.reset(seedRef.current);
     lightSimRef.current.reset(seedRef.current);
-    slotSimRef.current.setConfig({ ...config, mode: "slot" });
-    lightSimRef.current.setConfig({ ...config, mode: "lights" });
+    slotSimRef.current.setConfig({ ...viewConfig, mode: "slot" });
+    lightSimRef.current.setConfig({ ...viewConfig, mode: "lights" });
     slotSimRef.current.warmup(20);
     lightSimRef.current.warmup(20);
     setSlotStats(slotSimRef.current.snapshot());
@@ -85,16 +88,7 @@ export function CitySim() {
   };
 
   const patch = (partial: Partial<SimConfig>) =>
-    setConfig((c) => {
-      const next = { ...c, ...partial };
-      if (typeof next.cruiseMph === "number") {
-        next.cruiseMph = Math.min(120, Math.max(90, Math.round(next.cruiseMph)));
-      }
-      if (typeof next.crossMph === "number") {
-        next.crossMph = Math.min(55, Math.max(30, Math.round(next.crossMph)));
-      }
-      return next;
-    });
+    setConfig((c) => sanitizeConfig({ ...c, ...partial }));
   const showSlot = view !== "lights";
   const showLights = view !== "slot";
 
@@ -131,19 +125,19 @@ export function CitySim() {
           <div className={`grid min-h-[440px] flex-1 gap-3 ${showSlot && showLights ? "lg:grid-cols-2" : ""}`}>
             <SimPane
               className={showLights ? "" : "hidden"}
-              config={{ ...config, mode: "lights" }}
+              config={{ ...viewConfig, mode: "lights" }}
               zoom={zoom}
               label="Traffic lights"
               stats={lightStats}
-              empty={config.arrivalPerLane <= 0.01}
+              empty={viewConfig.arrivalPerLane <= 0.01}
             />
             <SimPane
               className={showSlot ? "" : "hidden"}
-              config={{ ...config, mode: "slot" }}
+              config={{ ...viewConfig, mode: "slot" }}
               zoom={zoom}
               label="Slot-based weave"
               stats={slotStats}
-              empty={config.arrivalPerLane <= 0.01}
+              empty={viewConfig.arrivalPerLane <= 0.01}
             />
           </div>
           {paused ? (
@@ -173,39 +167,39 @@ export function CitySim() {
 
               <RangeField
                 label="Traffic density"
-                display={`${config.arrivalPerLane.toFixed(2)} veh/s per lane`}
+                display={`${viewConfig.arrivalPerLane.toFixed(2)} veh/s per lane`}
                 min={0}
                 max={0.22}
                 step={0.01}
-                value={config.arrivalPerLane}
+                value={viewConfig.arrivalPerLane}
                 onChange={(v) => patch({ arrivalPerLane: v })}
               />
               <RangeField
                 label="Cruise speed"
-                display={`${config.cruiseMph} mph`}
+                display={`${viewConfig.cruiseMph} mph`}
                 min={90}
                 max={120}
                 step={1}
                 testId="cruise-speed"
-                value={config.cruiseMph}
+                value={viewConfig.cruiseMph}
                 onChange={(v) => patch({ cruiseMph: v })}
               />
               <RangeField
                 label="Crossing speed"
-                display={`${config.crossMph} mph`}
+                display={`${viewConfig.crossMph} mph`}
                 min={30}
                 max={55}
                 step={1}
-                value={config.crossMph}
+                value={viewConfig.crossMph}
                 onChange={(v) => patch({ crossMph: v })}
               />
               <RangeField
                 label="Playback"
-                display={`${config.timeScale.toFixed(2)}×`}
+                display={`${viewConfig.timeScale.toFixed(2)}×`}
                 min={0.25}
                 max={1.4}
                 step={0.05}
-                value={config.timeScale}
+                value={viewConfig.timeScale}
                 onChange={(v) => patch({ timeScale: v })}
               />
               <RangeField
@@ -223,11 +217,11 @@ export function CitySim() {
               <ToggleRow
                 label="Today vs tomorrow speeds"
                 hint={
-                  config.speedRegime === "vision"
-                    ? `Lights stay at ${config.lightsMph} mph. Slots cruise at ${config.cruiseMph}, cross at ${config.crossMph}.`
+                  viewConfig.speedRegime === "vision"
+                    ? `Lights stay at ${viewConfig.lightsMph} mph. Slots cruise at ${viewConfig.cruiseMph}, cross at ${viewConfig.crossMph}.`
                     : "Both sides use the same cruise and crossing speeds."
                 }
-                checked={config.speedRegime === "vision"}
+                checked={viewConfig.speedRegime === "vision"}
                 onCheckedChange={(checked) =>
                   patch({ speedRegime: (checked ? "vision" : "matched") as SpeedRegime })
                 }
@@ -235,13 +229,13 @@ export function CitySim() {
               <ToggleRow
                 label="Show reservation tiles"
                 hint="AIM-style space–time grid inside the box."
-                checked={config.showTiles}
+                checked={viewConfig.showTiles}
                 onCheckedChange={(checked) => patch({ showTiles: checked })}
               />
               <ToggleRow
                 label="Speed labels"
                 hint="Print mph on each car."
-                checked={config.showSpeeds}
+                checked={viewConfig.showSpeeds}
                 onCheckedChange={(checked) => patch({ showSpeeds: checked })}
               />
             </CardContent>
@@ -349,7 +343,8 @@ function RangeField({
         min={min}
         max={max}
         step={step}
-        value={value}
+        value={Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : min}
+        autoComplete="off"
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-cyan-300"
       />

@@ -30,6 +30,29 @@ export const DEFAULT_CONFIG: SimConfig = {
   showSpeeds: false,
 };
 
+export function sanitizeConfig(config: SimConfig): SimConfig {
+  const cruise = Math.round(Number(config.cruiseMph));
+  const cross = Math.round(Number(config.crossMph));
+  const lights = Math.round(Number(config.lightsMph));
+  const arrival = Number(config.arrivalPerLane);
+  const timeScale = Number(config.timeScale);
+  return {
+    ...config,
+    speedRegime: config.speedRegime === "matched" ? "matched" : "vision",
+    cruiseMph: cruise >= 90 && cruise <= 120 ? cruise : DEFAULT_CONFIG.cruiseMph,
+    crossMph: cross >= 30 && cross <= 55 ? cross : DEFAULT_CONFIG.crossMph,
+    lightsMph: lights >= 20 && lights <= 70 ? lights : DEFAULT_CONFIG.lightsMph,
+    arrivalPerLane: Number.isFinite(arrival)
+      ? Math.min(0.22, Math.max(0, arrival))
+      : DEFAULT_CONFIG.arrivalPerLane,
+    timeScale: Number.isFinite(timeScale)
+      ? Math.min(1.4, Math.max(0.25, timeScale))
+      : DEFAULT_CONFIG.timeScale,
+    showTiles: Boolean(config.showTiles),
+    showSpeeds: Boolean(config.showSpeeds),
+  };
+}
+
 export const LANE_WIDTH = 3.6;
 export const CAR_LENGTH = 4.7;
 export const CAR_WIDTH = 1.85;
