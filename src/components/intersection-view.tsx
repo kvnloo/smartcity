@@ -29,8 +29,8 @@ export function IntersectionView({
   const road = boxSize() / 2;
   const span = PATH_HALF + 8;
   const slot = snapshot.mode === "slot";
-  const carLen = CAR_LENGTH * 1.85;
-  const carWid = CAR_WIDTH * 1.85;
+  const carLen = CAR_LENGTH * 2.25;
+  const carWid = CAR_WIDTH * 2.2;
   const nightId = `night-${gid}`;
 
   return (
@@ -121,8 +121,8 @@ export function IntersectionView({
                   height={carWid}
                   rx={0.55}
                   fill={car.color}
-                  stroke="rgba(255,255,255,0.45)"
-                  strokeWidth={0.16}
+                  stroke="#ffffff"
+                  strokeWidth={0.28}
                 />
                 <rect
                   x={carLen / 2 - 0.7}
@@ -159,7 +159,7 @@ export function IntersectionView({
           slot ? "bg-black/50 text-cyan-200" : "bg-black/50 text-amber-200"
         }`}
       >
-        {label}
+        {label} · {snapshot.cars.length} vehicles · {Math.round(snapshot.meanMph)} mph
       </div>
     </div>
   );

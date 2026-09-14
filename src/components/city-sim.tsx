@@ -14,7 +14,7 @@ import { DEFAULT_CONFIG, type SimConfig, type SpeedRegime, type ViewMode } from 
 export function CitySim() {
   const [view, setView] = useState<ViewMode>("split");
   const [paused, setPaused] = useState(false);
-  const [zoom, setZoom] = useState(3.4);
+  const [zoom, setZoom] = useState(3.05);
   const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
   const seedRef = useRef(7);
   const pausedRef = useRef(false);
