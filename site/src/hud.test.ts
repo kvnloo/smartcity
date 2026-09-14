@@ -30,6 +30,6 @@ describe("hud", () => {
         { name: "hero", engine: "unreal_nanite + blender_mesh" },
         { name: "micro", engine: "sumo + slot AIM" },
       ]),
-    ).toBe("hero unreal_nanite · micro sumo");
+    ).toBe("hero Unreal · micro SUMO");
   });
 });

@@ -50,5 +50,13 @@ export function ttiTone(tti: number): "clear" | "busy" | "jam" {
 }
 
 export function fidelityLine(rings: FidelityRing[] = []): string {
-  return rings.map((r) => `${r.name} ${r.engine.split(/[+]/)[0]!.trim()}`).join(" · ");
+  const shortEngine = (engine: string): string => {
+    const raw = engine.split(/[+]/)[0]!.trim().toLowerCase();
+    if (raw.startsWith("unreal")) return "Unreal";
+    if (raw.startsWith("sumo meso") || raw.includes("ctm")) return "CTM";
+    if (raw.startsWith("sumo")) return "SUMO";
+    if (raw.includes("od")) return "OD";
+    return raw.split(/[\s_]/)[0] ?? raw;
+  };
+  return rings.map((r) => `${r.name} ${shortEngine(r.engine)}`).join(" · ");
 }
