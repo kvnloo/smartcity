@@ -78,13 +78,23 @@ export function CitySim() {
     lightSimRef.current.reset(seedRef.current);
     slotSimRef.current.setConfig({ ...config, mode: "slot" });
     lightSimRef.current.setConfig({ ...config, mode: "lights" });
-    slotSimRef.current.warmup(12);
-    lightSimRef.current.warmup(12);
+    slotSimRef.current.warmup(20);
+    lightSimRef.current.warmup(20);
     setSlotStats(slotSimRef.current.snapshot());
     setLightStats(lightSimRef.current.snapshot());
   };
 
-  const patch = (partial: Partial<SimConfig>) => setConfig((c) => ({ ...c, ...partial }));
+  const patch = (partial: Partial<SimConfig>) =>
+    setConfig((c) => {
+      const next = { ...c, ...partial };
+      if (typeof next.cruiseMph === "number") {
+        next.cruiseMph = Math.min(120, Math.max(90, Math.round(next.cruiseMph)));
+      }
+      if (typeof next.crossMph === "number") {
+        next.crossMph = Math.min(55, Math.max(30, Math.round(next.crossMph)));
+      }
+      return next;
+    });
   const showSlot = view !== "lights";
   const showLights = view !== "slot";
 
@@ -176,6 +186,7 @@ export function CitySim() {
                 min={90}
                 max={120}
                 step={1}
+                testId="cruise-speed"
                 value={config.cruiseMph}
                 onChange={(v) => patch({ cruiseMph: v })}
               />
@@ -260,9 +271,16 @@ function SimPane({
   return (
     <div className={className}>
       <div className="relative">
-        <IntersectionView snapshot={stats} zoom={zoom} label={label} />
+        <IntersectionView
+          snapshot={stats}
+          zoom={zoom}
+          label={label}
+          showTiles={config.showTiles}
+          showSpeeds={config.showSpeeds}
+        />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5" data-vehicles={stats.cars.length}>
+            <Stat k="Vehicles" v={`${stats.cars.length}`} />
             <Stat k="Throughput" v={`${Math.round(stats.throughputPerHour)} /h`} />
             <Stat k="Mean speed" v={`${Math.round(stats.meanMph)} mph`} />
             <Stat k="Stopped" v={`${stats.stopped}`} />
@@ -295,7 +313,7 @@ function Stat({ k, v }: { k: string; v: string }) {
 
 function makeSim(mode: "slot" | "lights", seed: number): TrafficSim {
   const sim = new TrafficSim({ ...DEFAULT_CONFIG, mode }, seed);
-  sim.warmup(12);
+  sim.warmup(20);
   return sim;
 }
 
@@ -307,6 +325,7 @@ function RangeField({
   step,
   value,
   onChange,
+  testId,
 }: {
   label: string;
   display: string;
@@ -315,12 +334,15 @@ function RangeField({
   step: number;
   value: number;
   onChange: (value: number) => void;
+  testId?: string;
 }) {
   return (
     <label className="block space-y-2">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-zinc-200">{label}</span>
-        <span className="font-mono text-xs text-cyan-200/80">{display}</span>
+        <span className="font-mono text-xs text-cyan-200/80" data-testid={testId}>
+          {display}
+        </span>
       </div>
       <input
         type="range"

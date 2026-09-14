@@ -130,7 +130,7 @@ export class TrafficSim {
     const delayRecent = this.delays.slice(-40);
     return {
       time: this.time,
-      cars: this.cars,
+      cars: this.cars.slice(),
       mode: this.config.mode,
       light: this.lightPhase(),
       collisions: this.overlapping,
