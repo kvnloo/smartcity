@@ -1,0 +1,397 @@
+{
+  "clock": "07:30",
+  "weekday_name": "Mon",
+  "weekend": false,
+  "origin": {
+    "crs": "EPSG:32616",
+    "lon": -88.106604,
+    "lat": 41.75421,
+    "utm_e": 408001.19,
+    "utm_n": 4623078.76,
+    "ring_center_lon": -88.147,
+    "ring_center_lat": 41.75,
+    "x_axis": "east",
+    "y_axis": "north",
+    "z_axis": "up",
+    "units": "metre",
+    "unreal_uu_per_metre": 100.0
+  },
+  "lanes": [
+    {
+      "id": "kennedy-revlac",
+      "name": "Kennedy Expressway reversible express lanes",
+      "kind": "expressway",
+      "direction": "inbound",
+      "extra_lanes": 2,
+      "fictional": false,
+      "inbound_mult": 1.44,
+      "outbound_mult": 0.76
+    },
+    {
+      "id": "i88-solarpunk",
+      "name": "I-88 programmable AV/bus spine",
+      "kind": "expressway",
+      "direction": "inbound",
+      "extra_lanes": 1,
+      "fictional": true,
+      "inbound_mult": 1.22,
+      "outbound_mult": 0.88
+    },
+    {
+      "id": "ogden-tidal",
+      "name": "Ogden Avenue peak travel lane",
+      "kind": "arterial",
+      "direction": "inbound",
+      "extra_lanes": 1,
+      "fictional": true,
+      "inbound_mult": 1.22,
+      "outbound_mult": 0.88
+    }
+  ],
+  "districts": [
+    {
+      "id": "naperville",
+      "name": "Naperville",
+      "lon": -88.147,
+      "lat": 41.75,
+      "role": "home",
+      "pop_k": 150
+    },
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "lon": -88.32,
+      "lat": 41.76,
+      "role": "home",
+      "pop_k": 180
+    },
+    {
+      "id": "downers",
+      "name": "Downers Grove",
+      "lon": -88.011,
+      "lat": 41.795,
+      "role": "home",
+      "pop_k": 50
+    },
+    {
+      "id": "oakbrook",
+      "name": "Oak Brook",
+      "lon": -87.929,
+      "lat": 41.833,
+      "role": "job",
+      "pop_k": 8
+    },
+    {
+      "id": "loop",
+      "name": "Chicago Loop",
+      "lon": -87.629,
+      "lat": 41.882,
+      "role": "job",
+      "pop_k": 45
+    },
+    {
+      "id": "ohare",
+      "name": "O'Hare",
+      "lon": -87.907,
+      "lat": 41.974,
+      "role": "job",
+      "pop_k": 12
+    },
+    {
+      "id": "evanston",
+      "name": "Evanston",
+      "lon": -87.687,
+      "lat": 42.045,
+      "role": "home",
+      "pop_k": 78
+    },
+    {
+      "id": "schaumburg",
+      "name": "Schaumburg",
+      "lon": -88.084,
+      "lat": 42.033,
+      "role": "job",
+      "pop_k": 78
+    },
+    {
+      "id": "joliet",
+      "name": "Joliet",
+      "lon": -88.082,
+      "lat": 41.525,
+      "role": "home",
+      "pop_k": 150
+    },
+    {
+      "id": "hydepark",
+      "name": "Hyde Park",
+      "lon": -87.59,
+      "lat": 41.795,
+      "role": "home",
+      "pop_k": 30
+    },
+    {
+      "id": "gary",
+      "name": "Gary",
+      "lon": -87.337,
+      "lat": 41.593,
+      "role": "home",
+      "pop_k": 69
+    },
+    {
+      "id": "waukegan",
+      "name": "Waukegan",
+      "lon": -87.845,
+      "lat": 42.364,
+      "role": "home",
+      "pop_k": 89
+    }
+  ],
+  "corridors": [
+    {
+      "id": "i88",
+      "name": "I-88 Reagan",
+      "from": "naperville",
+      "to": "loop",
+      "mode": "road",
+      "km": 45,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 16408,
+      "outbound_vph": 1830,
+      "minutes": 56.4,
+      "tidal": null
+    },
+    {
+      "id": "i290",
+      "name": "I-290 Eisenhower",
+      "from": "oakbrook",
+      "to": "loop",
+      "mode": "road",
+      "km": 22,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 12415,
+      "outbound_vph": 1920,
+      "minutes": 27.6,
+      "tidal": null
+    },
+    {
+      "id": "i90",
+      "name": "I-90 Kennedy",
+      "from": "ohare",
+      "to": "loop",
+      "mode": "road",
+      "km": 27,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 26071,
+      "outbound_vph": 2128,
+      "minutes": 33.9,
+      "tidal": "kennedy"
+    },
+    {
+      "id": "i94s",
+      "name": "I-94 Dan Ryan",
+      "from": "hydepark",
+      "to": "loop",
+      "mode": "road",
+      "km": 14,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 16036,
+      "outbound_vph": 2480,
+      "minutes": 17.6,
+      "tidal": null
+    },
+    {
+      "id": "i55",
+      "name": "I-55 Stevenson",
+      "from": "joliet",
+      "to": "loop",
+      "mode": "road",
+      "km": 55,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 11639,
+      "outbound_vph": 1800,
+      "minutes": 69.0,
+      "tidal": null
+    },
+    {
+      "id": "i294",
+      "name": "I-294 Tri-State",
+      "from": "schaumburg",
+      "to": "ohare",
+      "mode": "road",
+      "km": 18,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 9828,
+      "outbound_vph": 1520,
+      "minutes": 22.6,
+      "tidal": null
+    },
+    {
+      "id": "i94n",
+      "name": "I-94 Edens",
+      "from": "waukegan",
+      "to": "loop",
+      "mode": "road",
+      "km": 58,
+      "speed_mph": 29.7,
+      "tti": 1.85,
+      "inbound_vph": 10345,
+      "outbound_vph": 1600,
+      "minutes": 72.7,
+      "tidal": null
+    },
+    {
+      "id": "metra-bnsf",
+      "name": "Metra BNSF",
+      "from": "naperville",
+      "to": "loop",
+      "mode": "rail",
+      "km": 45,
+      "speed_mph": 37.7,
+      "tti": 1.12,
+      "inbound_vph": 6459,
+      "outbound_vph": 999,
+      "minutes": 26.8,
+      "tidal": null
+    },
+    {
+      "id": "ogden",
+      "name": "Ogden Avenue",
+      "from": "naperville",
+      "to": "loop",
+      "mode": "arterial",
+      "km": 42,
+      "speed_mph": 18.9,
+      "tti": 1.85,
+      "inbound_vph": 7880,
+      "outbound_vph": 879,
+      "minutes": 82.8,
+      "tidal": "ogden"
+    }
+  ],
+  "od": [
+    {
+      "from": "naperville",
+      "to": "loop",
+      "daily_work_trips": 18500,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "naperville",
+      "to": "oakbrook",
+      "daily_work_trips": 6200,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "naperville",
+      "to": "schaumburg",
+      "daily_work_trips": 2100,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "aurora",
+      "to": "loop",
+      "daily_work_trips": 14200,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "aurora",
+      "to": "naperville",
+      "daily_work_trips": 4800,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "downers",
+      "to": "loop",
+      "daily_work_trips": 7800,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "joliet",
+      "to": "loop",
+      "daily_work_trips": 9100,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "schaumburg",
+      "to": "loop",
+      "daily_work_trips": 6400,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "evanston",
+      "to": "loop",
+      "daily_work_trips": 8900,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "hydepark",
+      "to": "loop",
+      "daily_work_trips": 7200,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "ohare",
+      "to": "loop",
+      "daily_work_trips": 4100,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "waukegan",
+      "to": "loop",
+      "daily_work_trips": 5300,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "gary",
+      "to": "loop",
+      "daily_work_trips": 4700,
+      "source": "lodes_proxy"
+    },
+    {
+      "from": "oakbrook",
+      "to": "loop",
+      "daily_work_trips": 3900,
+      "source": "lodes_proxy"
+    }
+  ],
+  "fidelity": [
+    {
+      "name": "hero",
+      "engine": "unreal_nanite + blender_mesh",
+      "radius_km": 1.5,
+      "radius_m": 1500.0,
+      "tick_s": 0.016666666666666666,
+      "notes": "AAA street, Lumen, characters. ~2 km\u00b2."
+    },
+    {
+      "name": "micro",
+      "engine": "sumo + slot AIM",
+      "radius_km": 8.0,
+      "radius_m": 8000.0,
+      "tick_s": 0.25,
+      "notes": "Naperville + I-88 on-ramps. TraCI."
+    },
+    {
+      "name": "meso",
+      "engine": "sumo meso / CTM",
+      "radius_km": 40.0,
+      "radius_m": 40000.0,
+      "tick_s": 1.0,
+      "notes": "I-88/I-290/I-90 spines. Cell-transmission."
+    },
+    {
+      "name": "macro",
+      "engine": "od_flow",
+      "radius_km": 120.0,
+      "radius_m": 120000.0,
+      "tick_s": 5.0,
+      "notes": "CMAP district graph. LODES demand."
+    }
+  ]
+}

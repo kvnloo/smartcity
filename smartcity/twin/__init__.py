@@ -3,7 +3,7 @@
 from smartcity.twin.catalog import summary as catalog_summary
 from smartcity.twin.layers import overlay_geojson
 from smartcity.twin.macro import step_macro
-from smartcity.twin.region import RINGS, fidelity_for_distance_km
+from smartcity.twin.region import RINGS, fidelity_for_distance_km, origin_frame
 
 __all__ = [
     "catalog_summary",
@@ -11,4 +11,5 @@ __all__ = [
     "step_macro",
     "RINGS",
     "fidelity_for_distance_km",
+    "origin_frame",
 ]

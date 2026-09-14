@@ -9,9 +9,12 @@ vehicles or a 40 km expressway, it does not belong in the game thread.
 2. **Cesium for Unreal** — world terrain + optional OSM Buildings (ion token).
 3. **glTF importer** or Datasmith for Blender meshes.
 4. **Mass Entity / Mass Traffic** (experimental) or Niagara for meso ribbons.
-5. A tiny **UDP/WebSocket** plugin to read `GET /twin` + `/ws` from this repo.
+5. A tiny **WebSocket** client to read `GET /twin` + `/ws` from this repo.
+   Field names, units, origin, and the UDP-vs-WebSocket call are frozen in
+   **[docs/LIVE_CONTRACT.md](../docs/LIVE_CONTRACT.md)** (`docs/schema/*.schema.json`).
 
 Do not write a Cesium alternative. Do not write a Mass alternative.
+Do not speak Unity. Do not pull Google 3D Tiles on the live socket.
 
 ## Bring Naperville downtown across
 
@@ -39,7 +42,7 @@ the same origin so slot pads line up with SUMO edges.
 - Google 3D Tiles: one downtown tile. Never enable metro-scale 3D Tiles.
 - Meso traffic: Niagara ribbons or Mass fragments colored by TTI from `/twin`.
 - Hero traffic: at most a few hundred skeletal meshes, culled at 80–120 m.
-  Their positions come from SUMO TraCI or the FastAPI `/ws` snapshot.
+  Poses are `vehicles[].x_m` / `y_m` on `/ws` (metres, +X east). See the live contract.
 
 ## Talking to SUMO
 

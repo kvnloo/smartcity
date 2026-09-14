@@ -22,6 +22,7 @@ Workers never merge `main` or `dev`. Overnight work lands on `nightly`.
 The idea dump (solarpunk, papers, what we will not build) lives in
 **[docs/IDEAS.md](docs/IDEAS.md)**. Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 Data: [docs/DATA.md](docs/DATA.md). Unreal: [unreal/PIPELINE.md](unreal/PIPELINE.md).
+Live HTTP/WebSocket field names: [docs/LIVE_CONTRACT.md](docs/LIVE_CONTRACT.md).
 
 ## Three products, one geology
 
@@ -140,13 +141,17 @@ until a civic license exists. We do not scrape Google Maps.
 
 ## API
 
+Unreal implements against the frozen live contract: **[docs/LIVE_CONTRACT.md](docs/LIVE_CONTRACT.md)**
+(JSON Schema in `docs/schema/`, stub `python3 scripts/unreal_bridge_stub.py`).
+
 | Path | What |
 | --- | --- |
 | `GET /` | Ops map |
-| `GET /twin` | Clock, tidal lanes, corridor vph, districts |
+| `GET /twin` | Clock, tidal lanes, corridor vph, districts, origin, ring radii |
 | `GET /lanes` | Kennedy / I-88 / Ogden direction |
 | `GET /region` | GeoJSON overlays |
 | `GET /catalog` | Open vs paid datasets |
 | `GET /lights` | Naperville poles + Chicago spacing model |
 | `GET /playbook` | Solarpunk interventions |
+| `GET /snapshot` | One `/ws` frame over HTTP |
 | `WS /ws` | Live Naperville vehicles + twin clock |

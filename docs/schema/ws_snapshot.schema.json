@@ -1,0 +1,815 @@
+{
+  "$defs": {
+    "CommuteOd": {
+      "additionalProperties": false,
+      "properties": {
+        "daily_work_trips": {
+          "title": "Daily Work Trips",
+          "type": "integer"
+        },
+        "from": {
+          "description": "Origin district id.",
+          "title": "From",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "to": {
+          "description": "Destination district id.",
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "daily_work_trips",
+        "source"
+      ],
+      "title": "CommuteOd",
+      "type": "object"
+    },
+    "CorridorFlow": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "description": "Origin district id.",
+          "title": "From",
+          "type": "string"
+        },
+        "id": {
+          "description": "Corridor id (i88, i90, ogden, metra-bnsf, \u2026).",
+          "title": "Id",
+          "type": "string"
+        },
+        "inbound_vph": {
+          "description": "Inbound vehicles per hour (flow rate). Not an actor count. Do not spawn inbound_vph skeletal meshes.",
+          "title": "Inbound Vph",
+          "type": "integer"
+        },
+        "km": {
+          "description": "Schematic corridor length, kilometres.",
+          "title": "Km",
+          "type": "integer"
+        },
+        "minutes": {
+          "description": "Estimated door-to-door travel time along this corridor, minutes. Not clock minutes-from-midnight.",
+          "title": "Minutes",
+          "type": "number"
+        },
+        "mode": {
+          "enum": [
+            "road",
+            "rail",
+            "arterial"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "outbound_vph": {
+          "description": "Outbound vehicles per hour (flow rate), not an actor count.",
+          "title": "Outbound Vph",
+          "type": "integer"
+        },
+        "speed_mph": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Current speed, miles per hour.",
+          "title": "Speed Mph"
+        },
+        "tidal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional zipper family on this corridor: 'kennedy' or 'ogden'. I-88's zipper is lanes id i88-solarpunk; this field is null on corridor i88.",
+          "title": "Tidal"
+        },
+        "to": {
+          "description": "Destination district id.",
+          "title": "To",
+          "type": "string"
+        },
+        "tti": {
+          "description": "Travel-time index: free-flow / current. 1.0 is free flow.",
+          "title": "Tti",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "from",
+        "to",
+        "mode",
+        "km",
+        "speed_mph",
+        "tti",
+        "inbound_vph",
+        "outbound_vph",
+        "minutes",
+        "tidal"
+      ],
+      "title": "CorridorFlow",
+      "type": "object"
+    },
+    "DistrictNode": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "lat": {
+          "description": "WGS84 degrees.",
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "description": "WGS84 degrees.",
+          "title": "Lon",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pop_k": {
+          "description": "Population in thousands, order-of-magnitude.",
+          "title": "Pop K",
+          "type": "integer"
+        },
+        "role": {
+          "enum": [
+            "home",
+            "job"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "lon",
+        "lat",
+        "role",
+        "pop_k"
+      ],
+      "title": "DistrictNode",
+      "type": "object"
+    },
+    "FidelityRingState": {
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "description": "Who simulates this ring. Unreal only owns hero.",
+          "title": "Engine",
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "hero",
+            "micro",
+            "meso",
+            "macro"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        },
+        "radius_km": {
+          "description": "Ring radius from downtown Naperville, kilometres.",
+          "exclusiveMinimum": 0,
+          "title": "Radius Km",
+          "type": "number"
+        },
+        "radius_m": {
+          "description": "Same radius in metres (World Partition / cull sphere).",
+          "exclusiveMinimum": 0,
+          "title": "Radius M",
+          "type": "number"
+        },
+        "tick_s": {
+          "description": "Solver tick for this ring, seconds. Not the WebSocket send rate.",
+          "exclusiveMinimum": 0,
+          "title": "Tick S",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "engine",
+        "radius_km",
+        "radius_m",
+        "tick_s",
+        "notes"
+      ],
+      "title": "FidelityRingState",
+      "type": "object"
+    },
+    "IntersectionPad": {
+      "additionalProperties": false,
+      "properties": {
+        "degree": {
+          "title": "Degree",
+          "type": "integer"
+        },
+        "grants": {
+          "title": "Grants",
+          "type": "integer"
+        },
+        "had_signals": {
+          "description": "Former signalized pad (BATCH/AIM candidate).",
+          "title": "Had Signals",
+          "type": "boolean"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "lat": {
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "title": "Lon",
+          "type": "number"
+        },
+        "pending": {
+          "title": "Pending",
+          "type": "integer"
+        },
+        "x_m": {
+          "description": "Metres east of origin (local +X).",
+          "title": "X M",
+          "type": "number"
+        },
+        "y_m": {
+          "description": "Metres north of origin (local +Y).",
+          "title": "Y M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "lon",
+        "lat",
+        "x_m",
+        "y_m",
+        "had_signals",
+        "degree",
+        "pending",
+        "grants"
+      ],
+      "title": "IntersectionPad",
+      "type": "object"
+    },
+    "LaborSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "field_ops_hours_year": {
+          "title": "Field Ops Hours Year",
+          "type": "number"
+        },
+        "signal_ops_hours_year": {
+          "title": "Signal Ops Hours Year",
+          "type": "number"
+        },
+        "staffed_roles_removed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Staffed Roles Removed",
+          "type": "array"
+        },
+        "traveler_hours_this_run": {
+          "title": "Traveler Hours This Run",
+          "type": "number"
+        },
+        "vehicles_completed": {
+          "title": "Vehicles Completed",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "signal_ops_hours_year",
+        "field_ops_hours_year",
+        "traveler_hours_this_run",
+        "vehicles_completed",
+        "staffed_roles_removed"
+      ],
+      "title": "LaborSnapshot",
+      "type": "object"
+    },
+    "OriginFrame": {
+      "additionalProperties": false,
+      "description": "Local-metre frame for hero meshes, SUMO edges, and /ws poses.\n\nRing fills and the GitHub Pages camera use `ring_center_*` (Naperville\ndowntown). That is not the mesh origin in city.json.",
+      "properties": {
+        "crs": {
+          "const": "EPSG:32616",
+          "description": "UTM zone 16N. Local x_m/y_m are easting/northing minus utm_e/utm_n.",
+          "title": "Crs",
+          "type": "string"
+        },
+        "lat": {
+          "description": "Mesh origin latitude, WGS84 degrees.",
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "description": "Mesh origin longitude, WGS84 degrees.",
+          "title": "Lon",
+          "type": "number"
+        },
+        "ring_center_lat": {
+          "description": "Fidelity-ring centre latitude (downtown Naperville).",
+          "title": "Ring Center Lat",
+          "type": "number"
+        },
+        "ring_center_lon": {
+          "description": "Fidelity-ring centre longitude (downtown Naperville).",
+          "title": "Ring Center Lon",
+          "type": "number"
+        },
+        "units": {
+          "const": "metre",
+          "description": "SI metre. Not centimetres, not Unreal uu.",
+          "title": "Units",
+          "type": "string"
+        },
+        "unreal_uu_per_metre": {
+          "description": "Multiply x_m/y_m by this to reach default Unreal world units (centimetres). Use 1.0 if World Settings are metres.",
+          "title": "Unreal Uu Per Metre",
+          "type": "number"
+        },
+        "utm_e": {
+          "description": "Mesh origin easting, metres (EPSG:32616).",
+          "title": "Utm E",
+          "type": "number"
+        },
+        "utm_n": {
+          "description": "Mesh origin northing, metres (EPSG:32616).",
+          "title": "Utm N",
+          "type": "number"
+        },
+        "x_axis": {
+          "description": "Local +X. Always east.",
+          "enum": [
+            "east",
+            "north",
+            "up"
+          ],
+          "title": "X Axis",
+          "type": "string"
+        },
+        "y_axis": {
+          "description": "Local +Y. Always north.",
+          "enum": [
+            "east",
+            "north",
+            "up"
+          ],
+          "title": "Y Axis",
+          "type": "string"
+        },
+        "z_axis": {
+          "description": "Local +Z. Always up.",
+          "enum": [
+            "east",
+            "north",
+            "up"
+          ],
+          "title": "Z Axis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "crs",
+        "lon",
+        "lat",
+        "utm_e",
+        "utm_n",
+        "ring_center_lon",
+        "ring_center_lat",
+        "x_axis",
+        "y_axis",
+        "z_axis",
+        "units",
+        "unreal_uu_per_metre"
+      ],
+      "title": "OriginFrame",
+      "type": "object"
+    },
+    "ServiceEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "t": {
+          "description": "Simulation seconds.",
+          "title": "T",
+          "type": "number"
+        }
+      },
+      "required": [
+        "t",
+        "kind"
+      ],
+      "title": "ServiceEvent",
+      "type": "object"
+    },
+    "ServicesSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "buses": {
+          "title": "Buses",
+          "type": "integer"
+        },
+        "deliveries": {
+          "title": "Deliveries",
+          "type": "integer"
+        },
+        "emergencies": {
+          "title": "Emergencies",
+          "type": "integer"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/ServiceEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        }
+      },
+      "required": [
+        "buses",
+        "emergencies",
+        "deliveries",
+        "events"
+      ],
+      "title": "ServicesSnapshot",
+      "type": "object"
+    },
+    "SimMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "description": "Vehicles currently moving. This is the hero car count, not vph.",
+          "title": "Active",
+          "type": "integer"
+        },
+        "completed": {
+          "title": "Completed",
+          "type": "integer"
+        },
+        "delay_s": {
+          "title": "Delay S",
+          "type": "number"
+        },
+        "energy": {
+          "title": "Energy",
+          "type": "number"
+        },
+        "grants": {
+          "title": "Grants",
+          "type": "integer"
+        },
+        "mean_delay_s": {
+          "title": "Mean Delay S",
+          "type": "number"
+        },
+        "mean_speed_mph": {
+          "title": "Mean Speed Mph",
+          "type": "number"
+        },
+        "spawned": {
+          "title": "Spawned",
+          "type": "integer"
+        },
+        "stops": {
+          "title": "Stops",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "active",
+        "spawned",
+        "completed",
+        "mean_speed_mph",
+        "delay_s",
+        "stops",
+        "energy",
+        "grants",
+        "mean_delay_s"
+      ],
+      "title": "SimMetrics",
+      "type": "object"
+    },
+    "TidalFacilityState": {
+      "additionalProperties": false,
+      "description": "One zipper / reversible facility at the current clock.",
+      "properties": {
+        "direction": {
+          "description": "Which way extra capacity currently points. inbound = toward the named core (Loop / Chicago).",
+          "enum": [
+            "inbound",
+            "outbound"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "extra_lanes": {
+          "description": "Reversible/programmable lanes currently assigned. 0 when the weekend idle is in effect.",
+          "minimum": 0,
+          "title": "Extra Lanes",
+          "type": "integer"
+        },
+        "fictional": {
+          "description": "false = IDOT Kennedy REVLAC (real Chicago facility). true = solarpunk proposal (I-88 AV/bus spine or Ogden peak travel lane).",
+          "title": "Fictional",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Stable id. Switch barrier splines on this, not on the name string.",
+          "enum": [
+            "kennedy-revlac",
+            "i88-solarpunk",
+            "ogden-tidal"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "inbound_mult": {
+          "description": "Dimensionless capacity multiplier applied to inbound vph.",
+          "title": "Inbound Mult",
+          "type": "number"
+        },
+        "kind": {
+          "enum": [
+            "expressway",
+            "arterial"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "outbound_mult": {
+          "description": "Dimensionless capacity multiplier applied to outbound vph.",
+          "title": "Outbound Mult",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "direction",
+        "extra_lanes",
+        "fictional",
+        "inbound_mult",
+        "outbound_mult"
+      ],
+      "title": "TidalFacilityState",
+      "type": "object"
+    },
+    "TwinSnapshot": {
+      "additionalProperties": false,
+      "description": "GET /twin \u2014 clock, zipper state, rings, district flows.",
+      "properties": {
+        "clock": {
+          "description": "HH:MM 24h civil clock for the Chicagoland twin. Naive, not UTC.",
+          "title": "Clock",
+          "type": "string"
+        },
+        "corridors": {
+          "items": {
+            "$ref": "#/$defs/CorridorFlow"
+          },
+          "title": "Corridors",
+          "type": "array"
+        },
+        "districts": {
+          "items": {
+            "$ref": "#/$defs/DistrictNode"
+          },
+          "title": "Districts",
+          "type": "array"
+        },
+        "fidelity": {
+          "items": {
+            "$ref": "#/$defs/FidelityRingState"
+          },
+          "title": "Fidelity",
+          "type": "array"
+        },
+        "lanes": {
+          "description": "Zipper state. Bind Unreal barrier splines here.",
+          "items": {
+            "$ref": "#/$defs/TidalFacilityState"
+          },
+          "title": "Lanes",
+          "type": "array"
+        },
+        "od": {
+          "items": {
+            "$ref": "#/$defs/CommuteOd"
+          },
+          "title": "Od",
+          "type": "array"
+        },
+        "origin": {
+          "$ref": "#/$defs/OriginFrame"
+        },
+        "weekday_name": {
+          "enum": [
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat",
+            "Sun"
+          ],
+          "title": "Weekday Name",
+          "type": "string"
+        },
+        "weekend": {
+          "title": "Weekend",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "clock",
+        "weekday_name",
+        "weekend",
+        "origin",
+        "lanes",
+        "districts",
+        "corridors",
+        "od",
+        "fidelity"
+      ],
+      "title": "TwinSnapshot",
+      "type": "object"
+    },
+    "VehiclePose": {
+      "additionalProperties": false,
+      "description": "One hero/micro vehicle. A few hundred of these, not inbound_vph.",
+      "properties": {
+        "heading": {
+          "description": "Degrees from local +X (east) toward +Y (north), counter-clockwise. 0=east, 90=north. Compass heading (0=north, clockwise) = (90 - heading) mod 360. With Unreal X=east, Y=north, Z=up, actor yaw matches heading.",
+          "title": "Heading",
+          "type": "number"
+        },
+        "id": {
+          "description": "Stable for the lifetime of this vehicle in the current run.",
+          "title": "Id",
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "car",
+            "bus",
+            "emergency",
+            "delivery"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "lat": {
+          "description": "WGS84 degrees.",
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "description": "WGS84 degrees.",
+          "title": "Lon",
+          "type": "number"
+        },
+        "speed_mph": {
+          "description": "Miles per hour, not metres/second.",
+          "title": "Speed Mph",
+          "type": "number"
+        },
+        "x_m": {
+          "description": "Metres east of origin.utm_e (local +X).",
+          "title": "X M",
+          "type": "number"
+        },
+        "y_m": {
+          "description": "Metres north of origin.utm_n (local +Y).",
+          "title": "Y M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "lon",
+        "lat",
+        "x_m",
+        "y_m",
+        "speed_mph",
+        "heading"
+      ],
+      "title": "VehiclePose",
+      "type": "object"
+    }
+  },
+  "$id": "ws_snapshot.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "WS /ws and GET /snapshot \u2014 live Naperville poses plus nested twin/zipper.",
+  "properties": {
+    "intersections": {
+      "items": {
+        "$ref": "#/$defs/IntersectionPad"
+      },
+      "title": "Intersections",
+      "type": "array"
+    },
+    "labor": {
+      "$ref": "#/$defs/LaborSnapshot"
+    },
+    "metrics": {
+      "$ref": "#/$defs/SimMetrics"
+    },
+    "policy": {
+      "enum": [
+        "lights",
+        "fair",
+        "batch",
+        "aim"
+      ],
+      "title": "Policy",
+      "type": "string"
+    },
+    "services": {
+      "$ref": "#/$defs/ServicesSnapshot"
+    },
+    "t": {
+      "description": "Simulation seconds since /sim/start. dt = 0.25 s.",
+      "title": "T",
+      "type": "number"
+    },
+    "twin": {
+      "$ref": "#/$defs/TwinSnapshot"
+    },
+    "type": {
+      "const": "snapshot",
+      "description": "Every WebSocket frame is this object. No other message types exist.",
+      "title": "Type",
+      "type": "string"
+    },
+    "vehicles": {
+      "items": {
+        "$ref": "#/$defs/VehiclePose"
+      },
+      "title": "Vehicles",
+      "type": "array"
+    }
+  },
+  "required": [
+    "type",
+    "t",
+    "policy",
+    "vehicles",
+    "intersections",
+    "metrics",
+    "services",
+    "labor",
+    "twin"
+  ],
+  "title": "WsSnapshot",
+  "type": "object"
+}

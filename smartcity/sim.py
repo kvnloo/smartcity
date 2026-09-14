@@ -145,6 +145,8 @@ class CitySim:
                     "kind": v.kind,
                     "lon": round(lon, 6),
                     "lat": round(lat, 6),
+                    "x_m": round(v.x, 2),
+                    "y_m": round(v.y, 2),
                     "speed_mph": round(v.speed / MPH_TO_MPS, 1),
                     "heading": round(v.heading, 1),
                 }
@@ -161,6 +163,8 @@ class CitySim:
                     "id": nid,
                     "lon": round(lon, 6),
                     "lat": round(lat, 6),
+                    "x_m": round(ix.x, 2),
+                    "y_m": round(ix.y, 2),
                     "had_signals": ix.had_signals,
                     "degree": ix.degree,
                     "pending": int(pending) if not isinstance(pending, int) else pending,
@@ -169,6 +173,7 @@ class CitySim:
             )
         delay_saved = max(0.0, self.stats.completed * 18.0 - self.stats.delay_s) if self.cfg.policy != "lights" else 0.0
         return {
+            "type": "snapshot",
             "t": round(self.t, 2),
             "policy": self.cfg.policy,
             "vehicles": vehicles,
@@ -222,6 +227,8 @@ class CitySim:
             )
         return {
             "origin_lonlat": self.city.meta["origin_lonlat"],
+            "origin_utm": list(self.city.origin_utm),
+            "crs": self.city.meta.get("crs", "EPSG:32616"),
             "bbox_m": self.city.meta["bbox_m"],
             "counts": self.city.meta["counts"],
             "roads": {"type": "FeatureCollection", "features": roads},

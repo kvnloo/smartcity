@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from smartcity.config import SimConfig
 from smartcity.sim import CitySim
 from smartcity.twin.catalog import summary as catalog_summary
+from smartcity.twin.contract import LaneClockSnapshot, TwinSnapshot, WsSnapshot, dump_contract
+from smartcity.twin.lanes import snapshot as lane_snapshot
 from smartcity.twin.lanes import snapshot as lane_snapshot
 from smartcity.twin.layers import overlay_geojson
 from smartcity.twin.lights import inventory as lights_inventory
@@ -102,9 +104,9 @@ def city() -> dict[str, Any]:
     return sim.city_layers()
 
 
-@app.get("/snapshot")
-def snapshot() -> dict[str, Any]:
-    return sim.snapshot()
+@app.get("/snapshot", response_model=WsSnapshot)
+def snapshot() -> WsSnapshot:
+    return WsSnapshot.model_validate(sim.snapshot())
 
 
 @app.post("/sim/start")
@@ -142,14 +144,14 @@ def catalog() -> dict[str, Any]:
     return catalog_summary()
 
 
-@app.get("/twin")
-def twin() -> dict[str, Any]:
-    return step_macro(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+@app.get("/twin", response_model=TwinSnapshot)
+def twin() -> TwinSnapshot:
+    return TwinSnapshot.model_validate(step_macro(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday))
 
 
-@app.get("/lanes")
-def lanes() -> dict[str, Any]:
-    return lane_snapshot(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+@app.get("/lanes", response_model=LaneClockSnapshot)
+def lanes() -> LaneClockSnapshot:
+    return LaneClockSnapshot.model_validate(lane_snapshot(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday))
 
 
 @app.get("/region")
@@ -172,7 +174,7 @@ async def ws(socket: WebSocket) -> None:
     await socket.accept()
     try:
         while True:
-            await socket.send_json(sim.snapshot())
+            await socket.send_json(dump_contract(WsSnapshot.model_validate(sim.snapshot())))
             await asyncio.sleep(0.12)
     except WebSocketDisconnect:
         return

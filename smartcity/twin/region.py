@@ -19,6 +19,33 @@ CHICAGOLAND_BBOX = {
 
 NAPERVILLE = {"lon": -88.147, "lat": 41.750}
 
+# Local-metre origin for the Naperville mesh / SUMO / Unreal. Must match
+# data/processed/city.json meta.origin_lonlat and meta.origin_utm (UTM 16N).
+# Ring fills and the lookdev camera use NAPERVILLE, not this mesh origin.
+MESH_CRS = "EPSG:32616"
+MESH_ORIGIN_LONLAT = (-88.106604, 41.75421)
+MESH_ORIGIN_UTM = (408001.19, 4623078.76)
+
+
+def origin_frame() -> dict:
+    """Frozen Unreal/SUMO frame. Positions in the live contract are metres from this origin."""
+    lon, lat = MESH_ORIGIN_LONLAT
+    utm_e, utm_n = MESH_ORIGIN_UTM
+    return {
+        "crs": MESH_CRS,
+        "lon": lon,
+        "lat": lat,
+        "utm_e": utm_e,
+        "utm_n": utm_n,
+        "ring_center_lon": NAPERVILLE["lon"],
+        "ring_center_lat": NAPERVILLE["lat"],
+        "x_axis": "east",
+        "y_axis": "north",
+        "z_axis": "up",
+        "units": "metre",
+        "unreal_uu_per_metre": 100.0,
+    }
+
 # Super-nodes for the macroscopic layer (district / Cities: Skylines scale).
 DISTRICTS = [
     {"id": "naperville", "name": "Naperville", "lon": -88.147, "lat": 41.750, "role": "home", "pop_k": 150},

@@ -1,0 +1,39 @@
+{
+  "clock": "07:30",
+  "minutes": 450,
+  "weekday": 0,
+  "weekday_name": "Mon",
+  "weekend": false,
+  "facilities": [
+    {
+      "id": "kennedy-revlac",
+      "name": "Kennedy Expressway reversible express lanes",
+      "kind": "expressway",
+      "direction": "inbound",
+      "extra_lanes": 2,
+      "fictional": false,
+      "inbound_mult": 1.44,
+      "outbound_mult": 0.76
+    },
+    {
+      "id": "i88-solarpunk",
+      "name": "I-88 programmable AV/bus spine",
+      "kind": "expressway",
+      "direction": "inbound",
+      "extra_lanes": 1,
+      "fictional": true,
+      "inbound_mult": 1.22,
+      "outbound_mult": 0.88
+    },
+    {
+      "id": "ogden-tidal",
+      "name": "Ogden Avenue peak travel lane",
+      "kind": "arterial",
+      "direction": "inbound",
+      "extra_lanes": 1,
+      "fictional": true,
+      "inbound_mult": 1.22,
+      "outbound_mult": 0.88
+    }
+  ]
+}
