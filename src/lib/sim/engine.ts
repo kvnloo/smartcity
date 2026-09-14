@@ -315,30 +315,38 @@ export class TrafficSim {
         else if (gap < star) vDes = Math.min(vDes, Math.max(0, lead.v - 1.6));
       }
 
-      const a = clamp((vDes - car.v) / 0.28, -A_BRAKE, A_MAX);
+      const a = clamp((vDes - car.v) / 0.22, -A_BRAKE, A_MAX);
       car.v = Math.max(0, car.v + a * dt);
-      if (car.v < 0.12 && vDes <= 0.2) car.v = 0;
+      if (car.v < 0.15 && vDes <= 0.25) car.v = 0;
       car.s += car.v * dt;
+      if (this.config.mode === "lights" && vDes <= 0.25) {
+        const stopLine = enter - 2.2;
+        const frontNow = car.s + CAR_LENGTH / 2;
+        if (frontNow > stopLine && frontNow < enter) {
+          car.v = 0;
+          car.s = stopLine - CAR_LENGTH / 2;
+        }
+      }
     }
   }
 
   private lightDesired(car: Car, front: number, enter: number, cruise: number): number {
-    const stopLine = enter - 1.4;
+    const stopLine = enter - 2.2;
     const dist = stopLine - front;
     const phase = this.lightPhase();
     const ns = car.dir === "N" || car.dir === "S";
     const green = (ns && phase === "NS_GREEN") || (!ns && phase === "EW_GREEN");
     const yellow = (ns && phase === "NS_YELLOW") || (!ns && phase === "EW_YELLOW");
+    const inBox = front >= enter;
 
-    if (green) return cruise;
-    if (front > enter + 1) return cruise;
+    if (green || inBox) return cruise;
 
     const stopDist = (car.v * car.v) / (2 * A_BRAKE);
-    if (yellow && dist > 0 && stopDist > dist + 1.5) return cruise;
-    if (dist < -0.5) return cruise;
-    if (dist <= 0.35) return 0;
-    const vStop = Math.sqrt(Math.max(0, 2 * A_BRAKE * Math.max(dist, 0)));
-    return Math.min(cruise, vStop);
+    const cannotStop = dist > 0 && stopDist > dist + 0.6;
+    if (yellow && cannotStop) return cruise;
+
+    if (dist <= 0.8) return 0;
+    return Math.min(cruise, Math.sqrt(Math.max(0, 1.4 * A_BRAKE * dist)));
   }
 
   private finishCars(): void {
