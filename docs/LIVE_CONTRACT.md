@@ -272,7 +272,7 @@ Same zipper rows as `twin.lanes`, plus clock math:
     },
     {
       "id": 2,
-      "kind": "bus",
+      "kind": "car",
       "lon": -88.099926,
       "lat": 41.739586,
       "x_m": 534.45,
