@@ -1,0 +1,9 @@
+name: smartcity
+verify:
+  - pytest -q
+  - npm test --prefix site
+  - npm run build --prefix site
+pages:
+  source: site/dist
+  branch: nightly
+lookdev_not_sim: true
