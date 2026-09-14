@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "name": "Naperville, Illinois",
+    "crs": "EPSG:32616",
+    "origin_lonlat": [-88.106604, 41.75421],
+    "origin_utm": [408001.19, 4623078.76],
+    "bbox_m": [-1701.0, -3001.1, 1487.1, 2823.1]
+  }
+}

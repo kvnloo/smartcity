@@ -16,18 +16,24 @@ Do not write a Cesium alternative. Do not write a Mass alternative.
 ## Bring Naperville downtown across
 
 ```bash
-# OSM extrusion (no API key)
-python3 scripts/build_blender.py --source osm --preset tiled_500
+# OSM extrusion → glTF 2.0 (no API key). Unreal target:
+#   output/gltf/naperville_tiled_500.glb
+# Sidecar (origin, metres, up-axis):
+#   output/gltf/naperville_tiled_500.import.json
+python3 scripts/build_blender.py --source osm --preset tiled_500 --export gltf
 
-# Optional photogrammetry, billed, hero ring only
+# Optional photogrammetry, billed, hero ring only — not required for this mesh
 export GOOGLE_MAPS_API_KEY=…
 python3 scripts/build_blender.py --source google --extent downtown --lod lod3
 ```
 
-Export the winning `.blend` as **glTF 2.0**, metres, Y-up or Z-up consistently.
-Drop it into a World Partition grid aligned to UTM 16N origin in
-`data/processed/city.json` (`origin_lonlat`). Cesium georeference should use
-the same origin so slot pads line up with SUMO edges.
+The `--export gltf` path is the one Unreal Datasmith / the built-in glTF
+importer should load. Scene is **metres**, Blender **+Z up**, glTF file **+Y
+up**, Unreal **+Z up**. If the import looks 100× too small, set import
+uniform scale to **100** (metres → Unreal centimetres). Origin is
+`data/processed/city.json` `origin_lonlat` (else -88.147, 41.75). Place the
+actor at `(0,0,0)` and point Cesium georeference at that lon/lat so slot
+pads line up with SUMO edges. Details: `output/gltf/README.md`.
 
 ## Streaming rules (10 GB VRAM)
 

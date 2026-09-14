@@ -109,13 +109,16 @@ Open `http://127.0.0.1:43147`. Kennedy inbound at 07:30 is the default clock.
 ```bash
 python3 scripts/fetch_naperville.py
 python3 scripts/process_city.py
-python3 scripts/build_blender.py --source osm --preset tiled_500
+python3 scripts/build_blender.py --source osm --preset tiled_500 --export gltf
 ```
 
-Export the winning `.blend` as **glTF 2.0**, metres, origin =
-`data/processed/city.json` (`origin_lonlat`). Drop into Unreal World Partition
-(UTM 16N). Cesium georeference uses the same origin so slot pads sit on SUMO
-edges. Google 3D Tiles via Blosm wait for a billing key — OSM is the default.
+Unreal target: **`output/gltf/naperville_tiled_500.glb`** (glTF 2.0, metres).
+Sidecar `output/gltf/naperville_tiled_500.import.json` has origin, UTM 16N,
+and up-axis (Blender +Z → glTF +Y → Unreal +Z). Import with the glTF plugin
+or Datasmith; uniform scale **100** if Unreal is in centimetres. Cesium
+georeference uses the same `origin_lonlat`. Google 3D Tiles via Blosm wait
+for a billing key — OSM is the default. See [unreal/PIPELINE.md](unreal/PIPELINE.md)
+and [output/gltf/README.md](output/gltf/README.md).
 
 Next.js cinematic intersection (one weave vs lights): `npm install && npm run dev`
 → `http://127.0.0.1:43217`. That is a slot diagram, not the city.

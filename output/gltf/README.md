@@ -1,0 +1,63 @@
+# glTF 2.0 — Naperville hero mesh for Unreal
+
+Unreal target (unambiguous):
+
+```
+output/gltf/naperville_tiled_500.glb
+```
+
+Sidecar (origin / units / up-axis, committed even without Blender):
+
+```
+output/gltf/naperville_tiled_500.import.json
+```
+
+`.glb` / `.gltf` / `.bin` are gitignored. Do not commit giant binaries.
+
+## Command (OSM extrusion, no Google key)
+
+```bash
+python3 scripts/build_blender.py --source osm --preset tiled_500 --export gltf
+```
+
+That is the Datasmith / glTF importer path. It does **not** call Google 3D Tiles.
+
+Optional bounds (faster smoke):
+
+```bash
+python3 scripts/build_blender.py --source osm --preset tiled_500 --export gltf \
+  --hero-radius 400 --max-buildings 40
+```
+
+`--export gltf` defaults `--hero-radius` to **1500 m** (hero ring). `--hero-radius 0` keeps the whole processed city. `--export blend` (default) is the research `.blend` path and does not clip.
+
+Needs `data/processed/city.json` (`python3 scripts/process_city.py`). Origin is `meta.origin_lonlat` when that file exists, else downtown **(-88.147, 41.75)**.
+
+## Axes and scale (keep these consistent)
+
+| Stage | Units | Up |
+| --- | --- | --- |
+| Blender scene | metres (1 BU = 1 m) | **+Z** |
+| glTF 2.0 file | metres | **+Y** (exporter converts) |
+| Unreal world | centimetres | **+Z** |
+
+XY in the file is **EPSG:32616** easting/northing relative to the sidecar origin. `(0,0,0)` is that origin.
+
+## Unreal 5.4+ import
+
+1. Enable **glTF** (Edit → Plugins) **or** Datasmith. Either importer can read this glTF 2.0 GLB.
+2. Import `output/gltf/naperville_tiled_500.glb` into a World Partition map.
+3. **Convert Scene** on (glTF +Y → Unreal +Z).
+4. **Import Uniform Scale = 100** if the mesh is 100× too small (metres → centimetres). If the importer already treats glTF as metres, leave scale at 1 and confirm a 10 m pad is ~1000 Unreal units.
+5. Place the actor at `(0, 0, 0)`. Set **CesiumGeoreference** OriginLongitude / OriginLatitude from `origin_lonlat` in the sidecar so slot pads sit on SUMO edges.
+6. World Partition cell ~256 m. Nanite on hero buildings. No Lumen Hardware RT on a 3080 Ti.
+
+Read the sidecar before changing georeference. Do not mix this OSM mesh with a Google 3D Tiles tileset at a different origin.
+
+## Lookdev
+
+Limestone masses, copper towers, moss parks, warm lantern boxes at intersections. Retired traffic signals are **pads** (`RetiredSignals`), not heads.
+
+## Export status
+
+Blender binary is resolved as `tools/blender-5.1.2-linux-x64/blender`, then `PATH`. If neither exists, this launcher still writes the sidecar and exits with a message; the Python entry and tests ship without the mesh.
