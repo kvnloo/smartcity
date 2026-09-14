@@ -60,4 +60,4 @@ Limestone masses, copper towers, moss parks, warm lantern boxes at intersections
 
 ## Export status
 
-Blender binary is resolved as `tools/blender-5.1.2-linux-x64/blender`, then `PATH`. If neither exists, this launcher still writes the sidecar and exits with a message; the Python entry and tests ship without the mesh.
+This worktree has no Blender binary at `tools/blender-5.1.2-linux-x64/blender` and none on `PATH`. Running the documented command writes the sidecar and exits 1 (`Blender not found` / `Sidecar written; mesh export skipped`). The Python entry, origin/scale tests, and Unreal import contract still ship. Drop Blender 5.1+ at that portable path (or on PATH) and rerun to emit `naperville_tiled_500.glb`. Bounded smoke: add `--hero-radius 400 --max-buildings 40`.
