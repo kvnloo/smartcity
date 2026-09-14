@@ -59,5 +59,5 @@ class SimConfig:
     pedestrian_window_s: float = 6.0
     batch_n: int = 6
     batch_delay_trigger_s: float = 2.5
-    start_hour: float = 7.0
+    start_hour: float = 7.5
     start_weekday: int = 0  # 0=Monday
