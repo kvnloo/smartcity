@@ -1,15 +1,26 @@
 # Unreal pipeline — hero ring on a 3080 Ti
 
-Unreal is the **camera**, not the traffic engine. If a tick needs 400,000
-vehicles or a 40 km expressway, it does not belong in the game thread.
+Unreal is the **camera**, not the traffic engine. Unity is forbidden. If a tick
+needs 400,000 vehicles or a 40 km expressway, it does not belong in the game
+thread.
+
+## Open this (UE 5.4+)
+
+Open [`SmartCityHero/SmartCityHero.uproject`](SmartCityHero/SmartCityHero.uproject).
+Drop glTF into [`SmartCityHero/Content/City/Naperville/Import`](SmartCityHero/Content/City/Naperville/Import)
+(`/Game/City/Naperville/Import`). Origin, cell size, and city.json offset:
+[`SmartCityHero/Config/Georef.json`](SmartCityHero/Config/Georef.json). Human
+walkthrough: [`SmartCityHero/README.md`](SmartCityHero/README.md).
+
+No Google Maps key. OSM glTF only until a billed hero tile exists.
 
 ## What to install (all OSS or Epic-first-party)
 
 1. **Unreal Engine 5.4+** with World Partition.
 2. **Cesium for Unreal** — world terrain + optional OSM Buildings (ion token).
-3. **glTF importer** or Datasmith for Blender meshes.
+3. **glTF importer** (Interchange) or Datasmith for Blender meshes.
 4. **Mass Entity / Mass Traffic** (experimental) or Niagara for meso ribbons.
-5. A tiny **UDP/WebSocket** plugin to read `GET /twin` + `/ws` from this repo.
+5. Optional C++ module **SmartCityLive** in this project — `GET /twin` + `WS /ws`.
 
 Do not write a Cesium alternative. Do not write a Mass alternative.
 

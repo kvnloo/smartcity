@@ -1,0 +1,33 @@
+{
+  "crs": "EPSG:32616",
+  "utm_zone": "16N",
+  "origin_lonlat": [-88.147, 41.75],
+  "origin_utm_m": [404636.55, 4622655.27],
+  "unreal_axis": {
+    "x": "east_metres * 100",
+    "y": "north_metres * 100",
+    "z": "up_metres * 100"
+  },
+  "gltf_import_scale_if_metres": 100,
+  "world_partition_cell_m": 256,
+  "world_partition_cell_uu": 25600,
+  "hero_radius_m": 1500,
+  "impostor_radius_m": 8000,
+  "skeletal_car_cull_m": [80, 120],
+  "skeletal_car_cull_default_m": 100,
+  "gltf_drop_content": "/Game/City/Naperville/Import",
+  "gltf_drop_disk": "unreal/SmartCityHero/Content/City/Naperville/Import",
+  "level_save_as": "/Game/City/Naperville/L_NapervilleHero",
+  "city_json": {
+    "path": "data/processed/city.json",
+    "origin_lonlat": [-88.106604, 41.75421],
+    "origin_utm_m": [408001.19, 4623078.76],
+    "downtown_in_city_json_m": [-3364.65, -423.43],
+    "place_city_json_gltf_at_uu": [336465.0, 42343.0, 0.0]
+  },
+  "cesium_georeference": {
+    "OriginLongitude": -88.147,
+    "OriginLatitude": 41.75,
+    "OriginHeight": 0.0
+  }
+}
