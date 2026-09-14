@@ -122,7 +122,10 @@ Generate **geometry** in Blender. Simulate **easy kinematics** there only for
 cinematics. Complex traffic, zipper lanes, and region demand live in SUMO +
 this backend. Unreal is the renderer and the hero-ring pawn.
 
-Details: `unreal/PIPELINE.md`. SUMO adapter: `python3 scripts/build_sumo_net.py`.
+Details: `unreal/PIPELINE.md`. SUMO adapter: `python3 scripts/build_sumo_net.py`
+(writes plain XML; compiles `.net.xml` when netconvert exists). TraCI loop:
+`smartcity micro` (Eclipse SUMO) or the in-process mock when SUMO is missing.
+Install: `docs/SUMO.md`. Slot/AIM pads stay in `smartcity.slots`.
 
 ## Solarpunk rules of taste
 

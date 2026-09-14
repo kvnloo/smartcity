@@ -8,6 +8,8 @@ from pathlib import Path
 
 import uvicorn
 
+from smartcity.config import SimConfig
+from smartcity.micro import MicroLoop
 from smartcity.sim import demo_metrics
 from smartcity.twin.macro import step_macro
 
@@ -27,7 +29,10 @@ def main() -> None:
     twin.add_argument("--hour", type=float, default=7.5)
     twin.add_argument("--weekday", type=int, default=0)
     sub.add_parser("ingest", help="Refresh open-data samples into data/open/")
-    sub.add_parser("sumo", help="Write SUMO nod/edg XML from Naperville")
+    sub.add_parser("sumo", help="Write 8 km micro-ring XML; netconvert if SUMO is installed")
+    micro_p = sub.add_parser("micro", help="Tick the 8 km TraCI/mock ring")
+    micro_p.add_argument("--seconds", type=float, default=5.0)
+    micro_p.add_argument("--live", action="store_true", help="Require Eclipse SUMO TraCI")
     args = p.parse_args()
     if args.cmd == "serve":
         uvicorn.run("smartcity.api:app", host=args.host, port=args.port, reload=False)
@@ -40,6 +45,27 @@ def main() -> None:
         return
     if args.cmd == "sumo":
         subprocess.check_call([sys.executable, str(ROOT / "scripts" / "build_sumo_net.py")])
+        return
+    if args.cmd == "micro":
+        loop = MicroLoop(cfg=SimConfig(target_vehicles=80, spawn_per_s=6.0), live=bool(args.live))
+        steps = max(1, int(args.seconds / loop.cfg.dt))
+        for _ in range(steps):
+            loop.step()
+        snap = loop.snapshot()
+        print(
+            json.dumps(
+                {
+                    "source": snap["source"],
+                    "t": snap["t"],
+                    "tick_s": snap["tick_s"],
+                    "metrics": snap["metrics"],
+                    "vehicles": len(snap["vehicles"]),
+                    "clock": (snap.get("twin") or {}).get("clock"),
+                },
+                indent=2,
+            )
+        )
+        loop.close()
         return
     policies = ["lights", "fair", "batch", "aim"] if args.policy == "all" else [args.policy]
     out = {pol: demo_metrics(seconds=args.seconds, policy=pol, seed=7)["metrics"] for pol in policies}

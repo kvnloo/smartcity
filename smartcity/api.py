@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from smartcity.config import SimConfig
+from smartcity.micro import MicroLoop
 from smartcity.sim import CitySim
 from smartcity.twin.catalog import summary as catalog_summary
 from smartcity.twin.lanes import snapshot as lane_snapshot
@@ -24,6 +25,7 @@ from smartcity.twin.macro import step_macro
 from smartcity.twin.playbook import INTERVENTIONS
 
 sim = CitySim()
+micro = MicroLoop(city=sim.city)
 state = {"running": True, "speed": 6.0}
 
 
@@ -47,6 +49,7 @@ async def lifespan(app: FastAPI):
         await task
     except asyncio.CancelledError:
         pass
+    micro.close()
 
 
 app = FastAPI(title="SmartCity", version="0.2.0", lifespan=lifespan)
@@ -72,11 +75,11 @@ async def _runner() -> None:
         now = asyncio.get_event_loop().time()
         acc += (now - last) * state["speed"]
         last = now
-        dt = sim.cfg.dt
+        dt = micro.cfg.dt
         stepped = 0
         while acc >= dt and stepped < 24:
             if state["running"]:
-                sim.step()
+                micro.step()
             acc -= dt
             stepped += 1
         if stepped == 0:
@@ -86,14 +89,17 @@ async def _runner() -> None:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    twin = sim._twin or {}
+    twin = micro._twin or {}
     return {
         "ok": True,
-        "t": sim.t,
-        "policy": sim.cfg.policy,
+        "t": micro.t,
+        "policy": micro.cfg.policy,
         "running": state["running"],
         "clock": twin.get("clock"),
         "weekday": twin.get("weekday_name"),
+        "source": micro.source,
+        "ring": "micro",
+        "tick_s": micro.cfg.dt,
     }
 
 
@@ -104,25 +110,25 @@ def city() -> dict[str, Any]:
 
 @app.get("/snapshot")
 def snapshot() -> dict[str, Any]:
-    return sim.snapshot()
+    return micro.snapshot()
 
 
 @app.post("/sim/start")
 def start(body: StartBody) -> dict[str, Any]:
-    sim.reset(
-        SimConfig(
-            policy=body.policy,
-            target_vehicles=body.target_vehicles,
-            spawn_per_s=body.spawn_per_s,
-            seed=body.seed,
-            enable_services=body.enable_services,
-            start_hour=body.start_hour,
-            start_weekday=body.start_weekday,
-        )
+    cfg = SimConfig(
+        policy=body.policy,
+        target_vehicles=body.target_vehicles,
+        spawn_per_s=body.spawn_per_s,
+        seed=body.seed,
+        enable_services=body.enable_services,
+        start_hour=body.start_hour,
+        start_weekday=body.start_weekday,
     )
+    sim.reset(cfg)
+    micro.reset(cfg)
     state["running"] = True
     state["speed"] = body.speed
-    return {"ok": True, "policy": body.policy}
+    return {"ok": True, "policy": body.policy, "source": micro.source, "tick_s": micro.cfg.dt}
 
 
 @app.post("/sim/pause")
@@ -144,17 +150,17 @@ def catalog() -> dict[str, Any]:
 
 @app.get("/twin")
 def twin() -> dict[str, Any]:
-    return step_macro(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+    return step_macro(micro.t, micro.cfg.start_hour, micro.cfg.start_weekday)
 
 
 @app.get("/lanes")
 def lanes() -> dict[str, Any]:
-    return lane_snapshot(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+    return lane_snapshot(micro.t, micro.cfg.start_hour, micro.cfg.start_weekday)
 
 
 @app.get("/region")
 def region() -> dict[str, Any]:
-    return overlay_geojson(sim.t, sim.cfg.start_hour, sim.cfg.start_weekday)
+    return overlay_geojson(micro.t, micro.cfg.start_hour, micro.cfg.start_weekday)
 
 
 @app.get("/lights")
@@ -172,7 +178,7 @@ async def ws(socket: WebSocket) -> None:
     await socket.accept()
     try:
         while True:
-            await socket.send_json(sim.snapshot())
+            await socket.send_json(micro.snapshot())
             await asyncio.sleep(0.12)
     except WebSocketDisconnect:
         return

@@ -9,7 +9,7 @@ This project follows the [Verified OSS Loop](https://github.com/kvnloo/verified-
 | Path | What | Tests |
 | --- | --- | --- |
 | `site/` | Mobile GitHub Pages lookdev (MapLibre, device LOD). **Not the sim.** | `npm test --prefix site` |
-| `smartcity/` | Nested twin, tidal lanes, FastAPI ops map | `python -m pytest -q` |
+| `smartcity/` | Nested twin, tidal lanes, 8 km SUMO/mock TraCI, FastAPI ops map | `python -m pytest -q` |
 | `src/` | Next.js cinematic intersection | visual; no unit script yet |
 | `unreal/`, Blender scripts | Hero street. **Unreal** + Blender (not Unity) | pipeline docs, not this page |
 
