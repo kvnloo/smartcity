@@ -22,8 +22,8 @@
     "path": "data/processed/city.json",
     "origin_lonlat": [-88.106604, 41.75421],
     "origin_utm_m": [408001.19, 4623078.76],
-    "downtown_in_city_json_m": [-3364.65, -423.43],
-    "place_city_json_gltf_at_uu": [336465.0, 42343.0, 0.0]
+    "downtown_in_city_json_m": [-3364.64, -423.49],
+    "place_city_json_gltf_at_uu": [336464.0, 42349.0, 0.0]
   },
   "cesium_georeference": {
     "OriginLongitude": -88.147,

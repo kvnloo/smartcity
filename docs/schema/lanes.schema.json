@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "TidalFacilityState": {
+      "additionalProperties": false,
+      "description": "One zipper / reversible facility at the current clock.",
+      "properties": {
+        "direction": {
+          "description": "Which way extra capacity currently points. inbound = toward the named core (Loop / Chicago).",
+          "enum": [
+            "inbound",
+            "outbound"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "extra_lanes": {
+          "description": "Reversible/programmable lanes currently assigned. 0 when the weekend idle is in effect.",
+          "minimum": 0,
+          "title": "Extra Lanes",
+          "type": "integer"
+        },
+        "fictional": {
+          "description": "false = IDOT Kennedy REVLAC (real Chicago facility). true = solarpunk proposal (I-88 AV/bus spine or Ogden peak travel lane).",
+          "title": "Fictional",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Stable id. Switch barrier splines on this, not on the name string.",
+          "enum": [
+            "kennedy-revlac",
+            "i88-solarpunk",
+            "ogden-tidal"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "inbound_mult": {
+          "description": "Dimensionless capacity multiplier applied to inbound vph.",
+          "title": "Inbound Mult",
+          "type": "number"
+        },
+        "kind": {
+          "enum": [
+            "expressway",
+            "arterial"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "outbound_mult": {
+          "description": "Dimensionless capacity multiplier applied to outbound vph.",
+          "title": "Outbound Mult",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "direction",
+        "extra_lanes",
+        "fictional",
+        "inbound_mult",
+        "outbound_mult"
+      ],
+      "title": "TidalFacilityState",
+      "type": "object"
+    }
+  },
+  "$id": "lanes.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "GET /lanes \u2014 same zipper rows as twin.lanes, plus minutes-from-midnight.",
+  "properties": {
+    "clock": {
+      "description": "HH:MM 24h civil clock.",
+      "title": "Clock",
+      "type": "string"
+    },
+    "facilities": {
+      "items": {
+        "$ref": "#/$defs/TidalFacilityState"
+      },
+      "title": "Facilities",
+      "type": "array"
+    },
+    "minutes": {
+      "description": "Minutes from midnight. Kennedy wrap uses this.",
+      "exclusiveMaximum": 1440,
+      "minimum": 0,
+      "title": "Minutes",
+      "type": "integer"
+    },
+    "weekday": {
+      "description": "0=Monday \u2026 6=Sunday.",
+      "maximum": 6,
+      "minimum": 0,
+      "title": "Weekday",
+      "type": "integer"
+    },
+    "weekday_name": {
+      "enum": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "title": "Weekday Name",
+      "type": "string"
+    },
+    "weekend": {
+      "title": "Weekend",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "clock",
+    "minutes",
+    "weekday",
+    "weekday_name",
+    "weekend",
+    "facilities"
+  ],
+  "title": "LaneClockSnapshot",
+  "type": "object"
+}

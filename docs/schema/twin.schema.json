@@ -1,0 +1,492 @@
+{
+  "$defs": {
+    "CommuteOd": {
+      "additionalProperties": false,
+      "properties": {
+        "daily_work_trips": {
+          "title": "Daily Work Trips",
+          "type": "integer"
+        },
+        "from": {
+          "description": "Origin district id.",
+          "title": "From",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "to": {
+          "description": "Destination district id.",
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "daily_work_trips",
+        "source"
+      ],
+      "title": "CommuteOd",
+      "type": "object"
+    },
+    "CorridorFlow": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "description": "Origin district id.",
+          "title": "From",
+          "type": "string"
+        },
+        "id": {
+          "description": "Corridor id (i88, i90, ogden, metra-bnsf, \u2026).",
+          "title": "Id",
+          "type": "string"
+        },
+        "inbound_vph": {
+          "description": "Inbound vehicles per hour (flow rate). Not an actor count. Do not spawn inbound_vph skeletal meshes.",
+          "title": "Inbound Vph",
+          "type": "integer"
+        },
+        "km": {
+          "description": "Schematic corridor length, kilometres.",
+          "title": "Km",
+          "type": "integer"
+        },
+        "minutes": {
+          "description": "Estimated door-to-door travel time along this corridor, minutes. Not clock minutes-from-midnight.",
+          "title": "Minutes",
+          "type": "number"
+        },
+        "mode": {
+          "enum": [
+            "road",
+            "rail",
+            "arterial"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "outbound_vph": {
+          "description": "Outbound vehicles per hour (flow rate), not an actor count.",
+          "title": "Outbound Vph",
+          "type": "integer"
+        },
+        "speed_mph": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Current speed, miles per hour.",
+          "title": "Speed Mph"
+        },
+        "tidal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional zipper family on this corridor: 'kennedy' or 'ogden'. I-88's zipper is lanes id i88-solarpunk; this field is null on corridor i88.",
+          "title": "Tidal"
+        },
+        "to": {
+          "description": "Destination district id.",
+          "title": "To",
+          "type": "string"
+        },
+        "tti": {
+          "description": "Travel-time index: free-flow / current. 1.0 is free flow.",
+          "title": "Tti",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "from",
+        "to",
+        "mode",
+        "km",
+        "speed_mph",
+        "tti",
+        "inbound_vph",
+        "outbound_vph",
+        "minutes",
+        "tidal"
+      ],
+      "title": "CorridorFlow",
+      "type": "object"
+    },
+    "DistrictNode": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "lat": {
+          "description": "WGS84 degrees.",
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "description": "WGS84 degrees.",
+          "title": "Lon",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pop_k": {
+          "description": "Population in thousands, order-of-magnitude.",
+          "title": "Pop K",
+          "type": "integer"
+        },
+        "role": {
+          "enum": [
+            "home",
+            "job"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "lon",
+        "lat",
+        "role",
+        "pop_k"
+      ],
+      "title": "DistrictNode",
+      "type": "object"
+    },
+    "FidelityRingState": {
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "description": "Who simulates this ring. Unreal only owns hero.",
+          "title": "Engine",
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "hero",
+            "micro",
+            "meso",
+            "macro"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "title": "Notes",
+          "type": "string"
+        },
+        "radius_km": {
+          "description": "Ring radius from downtown Naperville, kilometres.",
+          "exclusiveMinimum": 0,
+          "title": "Radius Km",
+          "type": "number"
+        },
+        "radius_m": {
+          "description": "Same radius in metres (World Partition / cull sphere).",
+          "exclusiveMinimum": 0,
+          "title": "Radius M",
+          "type": "number"
+        },
+        "tick_s": {
+          "description": "Solver tick for this ring, seconds. Not the WebSocket send rate.",
+          "exclusiveMinimum": 0,
+          "title": "Tick S",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "engine",
+        "radius_km",
+        "radius_m",
+        "tick_s",
+        "notes"
+      ],
+      "title": "FidelityRingState",
+      "type": "object"
+    },
+    "OriginFrame": {
+      "additionalProperties": false,
+      "description": "Local-metre frame for hero meshes, SUMO edges, and /ws poses.\n\nRing fills, Cesium, and Unreal (0,0,0) use `ring_center_*` (Naperville\ndowntown). `/ws` `x_m`/`y_m` are relative to the mesh origin in city.json.\nConvert with `downtown_x_m` / `downtown_y_m`.",
+      "properties": {
+        "crs": {
+          "const": "EPSG:32616",
+          "description": "UTM zone 16N. Local x_m/y_m are easting/northing minus utm_e/utm_n.",
+          "title": "Crs",
+          "type": "string"
+        },
+        "downtown_x_m": {
+          "description": "Downtown easting minus mesh origin, metres. Unreal uu_x = (x_m - downtown_x_m) * unreal_uu_per_metre when (0,0,0) is downtown.",
+          "title": "Downtown X M",
+          "type": "number"
+        },
+        "downtown_y_m": {
+          "description": "Downtown northing minus mesh origin, metres. Unreal uu_y = (y_m - downtown_y_m) * unreal_uu_per_metre.",
+          "title": "Downtown Y M",
+          "type": "number"
+        },
+        "lat": {
+          "description": "Mesh origin latitude, WGS84 degrees.",
+          "title": "Lat",
+          "type": "number"
+        },
+        "lon": {
+          "description": "Mesh origin longitude, WGS84 degrees.",
+          "title": "Lon",
+          "type": "number"
+        },
+        "ring_center_lat": {
+          "description": "Fidelity-ring centre latitude (downtown Naperville).",
+          "title": "Ring Center Lat",
+          "type": "number"
+        },
+        "ring_center_lon": {
+          "description": "Fidelity-ring centre longitude (downtown Naperville).",
+          "title": "Ring Center Lon",
+          "type": "number"
+        },
+        "units": {
+          "const": "metre",
+          "description": "SI metre. Not centimetres, not Unreal uu.",
+          "title": "Units",
+          "type": "string"
+        },
+        "unreal_uu_per_metre": {
+          "description": "Scale from SI metres to default Unreal world units (centimetres). Use 1.0 if World Settings are metres. Do not multiply x_m by this alone \u2014 subtract downtown_x_m first, or parent to the glTF actor.",
+          "title": "Unreal Uu Per Metre",
+          "type": "number"
+        },
+        "utm_e": {
+          "description": "Mesh origin easting, metres (EPSG:32616).",
+          "title": "Utm E",
+          "type": "number"
+        },
+        "utm_n": {
+          "description": "Mesh origin northing, metres (EPSG:32616).",
+          "title": "Utm N",
+          "type": "number"
+        },
+        "x_axis": {
+          "description": "Local +X. Always east.",
+          "enum": [
+            "east",
+            "north",
+            "up"
+          ],
+          "title": "X Axis",
+          "type": "string"
+        },
+        "y_axis": {
+          "description": "Local +Y. Always north.",
+          "enum": [
+            "east",
+            "north",
+            "up"
+          ],
+          "title": "Y Axis",
+          "type": "string"
+        },
+        "z_axis": {
+          "description": "Local +Z. Always up.",
+          "enum": [
+            "east",
+            "north",
+            "up"
+          ],
+          "title": "Z Axis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "crs",
+        "lon",
+        "lat",
+        "utm_e",
+        "utm_n",
+        "ring_center_lon",
+        "ring_center_lat",
+        "downtown_x_m",
+        "downtown_y_m",
+        "x_axis",
+        "y_axis",
+        "z_axis",
+        "units",
+        "unreal_uu_per_metre"
+      ],
+      "title": "OriginFrame",
+      "type": "object"
+    },
+    "TidalFacilityState": {
+      "additionalProperties": false,
+      "description": "One zipper / reversible facility at the current clock.",
+      "properties": {
+        "direction": {
+          "description": "Which way extra capacity currently points. inbound = toward the named core (Loop / Chicago).",
+          "enum": [
+            "inbound",
+            "outbound"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "extra_lanes": {
+          "description": "Reversible/programmable lanes currently assigned. 0 when the weekend idle is in effect.",
+          "minimum": 0,
+          "title": "Extra Lanes",
+          "type": "integer"
+        },
+        "fictional": {
+          "description": "false = IDOT Kennedy REVLAC (real Chicago facility). true = solarpunk proposal (I-88 AV/bus spine or Ogden peak travel lane).",
+          "title": "Fictional",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "Stable id. Switch barrier splines on this, not on the name string.",
+          "enum": [
+            "kennedy-revlac",
+            "i88-solarpunk",
+            "ogden-tidal"
+          ],
+          "title": "Id",
+          "type": "string"
+        },
+        "inbound_mult": {
+          "description": "Dimensionless capacity multiplier applied to inbound vph.",
+          "title": "Inbound Mult",
+          "type": "number"
+        },
+        "kind": {
+          "enum": [
+            "expressway",
+            "arterial"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "outbound_mult": {
+          "description": "Dimensionless capacity multiplier applied to outbound vph.",
+          "title": "Outbound Mult",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "direction",
+        "extra_lanes",
+        "fictional",
+        "inbound_mult",
+        "outbound_mult"
+      ],
+      "title": "TidalFacilityState",
+      "type": "object"
+    }
+  },
+  "$id": "twin.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "GET /twin \u2014 clock, zipper state, rings, district flows.",
+  "properties": {
+    "clock": {
+      "description": "HH:MM 24h civil clock for the Chicagoland twin. Naive, not UTC.",
+      "title": "Clock",
+      "type": "string"
+    },
+    "corridors": {
+      "items": {
+        "$ref": "#/$defs/CorridorFlow"
+      },
+      "title": "Corridors",
+      "type": "array"
+    },
+    "districts": {
+      "items": {
+        "$ref": "#/$defs/DistrictNode"
+      },
+      "title": "Districts",
+      "type": "array"
+    },
+    "fidelity": {
+      "items": {
+        "$ref": "#/$defs/FidelityRingState"
+      },
+      "title": "Fidelity",
+      "type": "array"
+    },
+    "lanes": {
+      "description": "Zipper state. Bind Unreal barrier splines here.",
+      "items": {
+        "$ref": "#/$defs/TidalFacilityState"
+      },
+      "title": "Lanes",
+      "type": "array"
+    },
+    "od": {
+      "items": {
+        "$ref": "#/$defs/CommuteOd"
+      },
+      "title": "Od",
+      "type": "array"
+    },
+    "origin": {
+      "$ref": "#/$defs/OriginFrame"
+    },
+    "weekday_name": {
+      "enum": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "title": "Weekday Name",
+      "type": "string"
+    },
+    "weekend": {
+      "title": "Weekend",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "clock",
+    "weekday_name",
+    "weekend",
+    "origin",
+    "lanes",
+    "districts",
+    "corridors",
+    "od",
+    "fidelity"
+  ],
+  "title": "TwinSnapshot",
+  "type": "object"
+}

@@ -23,6 +23,7 @@ The idea dump (solarpunk, papers, what we will not build) lives in
 **[docs/IDEAS.md](docs/IDEAS.md)**. Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 Data: [docs/DATA.md](docs/DATA.md). Pages clicks: [docs/PAGES.md](docs/PAGES.md).
 Unreal: [unreal/PIPELINE.md](unreal/PIPELINE.md).
+Live HTTP/WebSocket field names: [docs/LIVE_CONTRACT.md](docs/LIVE_CONTRACT.md).
 
 ## Three products, one geology
 
@@ -32,7 +33,7 @@ Unreal: [unreal/PIPELINE.md](unreal/PIPELINE.md).
 │  1.5 km Nanite street · Blender mesh · < few hundred cars    │
 │  Lumen software · World Partition · Cesium terrain           │
 └──────────────────────────▲──────────────────────────────────┘
-                           │ UDP / WebSocket snapshot
+                           │ WebSocket /twin + /ws snapshot
 ┌──────────────────────────┴──────────────────────────────────┐
 │  This repo (FastAPI + SUMO)                                  │
 │  micro 8 km 0.25 s · meso 40 km 1 s · macro 120 km 5 s       │
@@ -149,13 +150,17 @@ until a civic license exists. We do not scrape Google Maps.
 
 ## API
 
+Unreal implements against the frozen live contract: **[docs/LIVE_CONTRACT.md](docs/LIVE_CONTRACT.md)**
+(JSON Schema in `docs/schema/`, stub `python3 scripts/unreal_bridge_stub.py`).
+
 | Path | What |
 | --- | --- |
 | `GET /` | Ops map |
-| `GET /twin` | Clock, tidal lanes, corridor vph, districts |
+| `GET /twin` | Clock, tidal lanes, corridor vph, districts, origin, ring radii |
 | `GET /lanes` | Kennedy / I-88 / Ogden direction |
 | `GET /region` | GeoJSON overlays |
 | `GET /catalog` | Open vs paid datasets |
 | `GET /lights` | Naperville poles + Chicago spacing model |
 | `GET /playbook` | Solarpunk interventions |
+| `GET /snapshot` | One `/ws` frame over HTTP |
 | `WS /ws` | Live Naperville vehicles + twin clock |

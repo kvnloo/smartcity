@@ -21,8 +21,11 @@ No Google Maps key. OSM glTF only until a billed hero tile exists.
 3. **glTF importer** (Interchange) or Datasmith for Blender meshes.
 4. **Mass Entity / Mass Traffic** (experimental) or Niagara for meso ribbons.
 5. Optional C++ module **SmartCityLive** in this project — `GET /twin` + `WS /ws`.
+   Field names, units, origin, and the UDP-vs-WebSocket call are frozen in
+   **[docs/LIVE_CONTRACT.md](../docs/LIVE_CONTRACT.md)** (`docs/schema/*.schema.json`).
 
 Do not write a Cesium alternative. Do not write a Mass alternative.
+Do not speak Unity. Do not pull Google 3D Tiles on the live socket.
 
 ## Bring Naperville downtown across
 
@@ -59,7 +62,8 @@ Details: `output/gltf/README.md`.
 - Google 3D Tiles: one downtown tile. Never enable metro-scale 3D Tiles.
 - Meso traffic: Niagara ribbons or Mass fragments colored by TTI from `/twin`.
 - Hero traffic: at most a few hundred skeletal meshes, culled at 80–120 m.
-  Their positions come from SUMO TraCI or the FastAPI `/ws` snapshot.
+  Poses are `vehicles[].x_m` / `y_m` on `/ws` (metres from `city.json`, +X east).
+  Unreal `(0,0,0)` is downtown: `uu = (x_m - origin.downtown_x_m) * 100`. See the live contract.
 
 ## Talking to SUMO
 

@@ -9,6 +9,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from smartcity.geo import utm
+
 # CMAP 7-county + NW Indiana fringe
 CHICAGOLAND_BBOX = {
     "west": -88.71,
@@ -18,6 +20,53 @@ CHICAGOLAND_BBOX = {
 }
 
 NAPERVILLE = {"lon": -88.147, "lat": 41.750}
+
+# Local-metre origin for the Naperville mesh / SUMO / /ws x_m,y_m. Must match
+# data/processed/city.json meta.origin_lonlat and meta.origin_utm (UTM 16N).
+# Unreal (0,0,0), Cesium, and SmartCityLive stay on NAPERVILLE (downtown).
+MESH_CRS = "EPSG:32616"
+MESH_ORIGIN_LONLAT = (-88.106604, 41.75421)
+MESH_ORIGIN_UTM = (408001.19, 4623078.76)
+
+
+def downtown_in_mesh_m() -> tuple[float, float]:
+    """Downtown in city.json metres. OSM centroid is kilometres east of the camera."""
+    de, dn = utm(NAPERVILLE["lon"], NAPERVILLE["lat"])
+    return round(de - MESH_ORIGIN_UTM[0], 2), round(dn - MESH_ORIGIN_UTM[1], 2)
+
+
+def mesh_xy_to_unreal_uu(x_m: float, y_m: float, frame: dict | None = None) -> tuple[float, float, float]:
+    """Convert /ws mesh metres to Unreal centimetres with downtown at (0,0,0)."""
+    origin = frame or origin_frame()
+    scale = float(origin["unreal_uu_per_metre"])
+    return (
+        (x_m - float(origin["downtown_x_m"])) * scale,
+        (y_m - float(origin["downtown_y_m"])) * scale,
+        0.0,
+    )
+
+
+def origin_frame() -> dict:
+    """Frozen Unreal/SUMO frame. Positions in the live contract are metres from the mesh origin."""
+    lon, lat = MESH_ORIGIN_LONLAT
+    utm_e, utm_n = MESH_ORIGIN_UTM
+    downtown_x_m, downtown_y_m = downtown_in_mesh_m()
+    return {
+        "crs": MESH_CRS,
+        "lon": lon,
+        "lat": lat,
+        "utm_e": utm_e,
+        "utm_n": utm_n,
+        "ring_center_lon": NAPERVILLE["lon"],
+        "ring_center_lat": NAPERVILLE["lat"],
+        "downtown_x_m": downtown_x_m,
+        "downtown_y_m": downtown_y_m,
+        "x_axis": "east",
+        "y_axis": "north",
+        "z_axis": "up",
+        "units": "metre",
+        "unreal_uu_per_metre": 100.0,
+    }
 
 # Super-nodes for the macroscopic layer (district / Cities: Skylines scale).
 DISTRICTS = [

@@ -7,7 +7,7 @@ It moves OD counts so Unreal and SUMO know where to spend micro budget.
 from __future__ import annotations
 
 from smartcity.twin import demand, lanes
-from smartcity.twin.region import CORRIDORS, DISTRICTS, RINGS
+from smartcity.twin.region import CORRIDORS, DISTRICTS, RINGS, origin_frame
 
 # Daily vehicles (both dirs) used when LODES pair is missing. AADT-ish / 1.2
 # so we do not pretend every AADT vehicle is a Loop commute.
@@ -76,6 +76,7 @@ def step_macro(sim_t: float, start_hour: float = 7.0, start_weekday: int = 0) ->
         "clock": clock["clock"],
         "weekday_name": clock["weekday_name"],
         "weekend": clock["weekend"],
+        "origin": origin_frame(),
         "lanes": clock["facilities"],
         "districts": DISTRICTS,
         "corridors": flows,
@@ -85,6 +86,7 @@ def step_macro(sim_t: float, start_hour: float = 7.0, start_weekday: int = 0) ->
                 "name": r.name,
                 "engine": r.engine,
                 "radius_km": r.radius_km,
+                "radius_m": round(r.radius_km * 1000.0, 1),
                 "tick_s": r.tick_s,
                 "notes": r.notes,
             }

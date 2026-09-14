@@ -35,7 +35,7 @@ Cesium for Unreal (optional, ion token is yours — not in git): same
 
 Blender's `data/processed/city.json` origin is the OSM centroid
 (−88.106604, 41.75421), about **3365 m east / 423 m north** of downtown. If the
-glTF is still in that frame, place the imported actor at **(336465, 42343, 0)**
+glTF is still in that frame, place the imported actor at **(336464, 42349, 0)**
 UU so downtown sits on the Unreal origin. Or re-export with downtown as 0,0.
 
 ## 3080 Ti (10 GB) — already in Config

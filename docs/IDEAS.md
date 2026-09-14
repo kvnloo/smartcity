@@ -26,7 +26,8 @@ Unreal never ticks Gary. SUMO never shaders a brick. Pages never runs TraCI.
 
 Nanite + World Partition + Cesium for Unreal is the 3080 Ti path. Unity HDRP
 is a second engine we will not staff. Mass Entity / Niagara for meso ribbons.
-A tiny UDP/WebSocket subsystem reads `GET /twin` and `/ws`.
+A tiny WebSocket subsystem reads `GET /twin` and `/ws`
+([docs/LIVE_CONTRACT.md](LIVE_CONTRACT.md)). Do not invent UDP for zipper state.
 
 Do not write a Cesium alternative. Do not write a Mass alternative. Do not
 import the 40 km SUMO net as `AActor`s.
@@ -141,11 +142,14 @@ rasters. It does not import glTF.
 
 ## Live contract Unreal should speak
 
-- `GET /twin` — clock, lanes, corridor TTI, districts, rings
+Frozen in **[docs/LIVE_CONTRACT.md](LIVE_CONTRACT.md)** (schema under `docs/schema/`).
+
+- `GET /twin` — clock, lanes, corridor TTI, districts, rings, origin
 - `GET /lanes` — Kennedy / I-88 / Ogden multipliers
 - `GET /lights` — poles
 - `WS /ws` — vehicle snapshot + clock
 - Barrier spline, not net rebuild, when a zipper flips
+- Kennedy REVLAC is real (`fictional: false`); I-88 / Ogden are proposed (`true`)
 
 ## Verified OSS Loop
 
