@@ -4,8 +4,12 @@ Reads data/processed/city.json and emits a tiled .blend plus a JSON stats
 dump used by the RT research loop. No bpy.ops in the hot path: meshes are
 batched with foreach_set.
 
+Scene units are metres, +Z up, XY = UTM 16N relative to city.json origin.
+`--export gltf` writes glTF 2.0 (metres, +Y up) for Unreal.
+
 Run:
   blender --background --python blender_scripts/build_city.py -- --preset tiled_500
+  python3 scripts/build_blender.py --source osm --preset tiled_500 --export gltf
 """
 
 from __future__ import annotations
@@ -21,6 +25,10 @@ import bpy
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from smartcity.gltf_export import SOLARPUNK_MATERIALS, glb_path as default_glb_path, hero_keep
+
 DEFAULT_CITY = ROOT / "data" / "processed" / "city.json"
 OUT_DIR = ROOT / "output" / "blends"
 STATS_DIR = ROOT / "output" / "research"
@@ -29,15 +37,13 @@ STATS_DIR = ROOT / "output" / "research"
 COLORS = {
     "asphalt": (0.16, 0.14, 0.12, 1),
     "lane": (0.22, 0.20, 0.16, 1),
-    "building": (0.62, 0.54, 0.42, 1),
-    "tower": (0.55, 0.36, 0.22, 1),
-    "park": (0.22, 0.42, 0.24, 1),
     "water": (0.14, 0.32, 0.38, 1),
     "ground": (0.18, 0.22, 0.16, 1),
     "slot": (0.42, 0.72, 0.38, 1),
-    "signal": (0.82, 0.42, 0.22, 1),
     "boundary": (0.22, 0.26, 0.22, 1),
 }
+for _name, _spec in SOLARPUNK_MATERIALS.items():
+    COLORS[_name] = _spec["rgba"]
 
 
 def parse_args():
@@ -46,6 +52,12 @@ def parse_args():
     p.add_argument("--city", default=str(DEFAULT_CITY))
     p.add_argument("--preset", default="tiled_500")
     p.add_argument("--out", default="")
+    p.add_argument("--export", choices=("blend", "gltf"), default="blend")
+    p.add_argument("--out-gltf", default="")
+    p.add_argument("--hero-radius", type=float, default=0.0, help="0 = whole city; 1500 = Unreal hero ring")
+    p.add_argument("--clip-cx", type=float, default=0.0, help="Hero clip centre X in mesh metres (downtown in city.json XY)")
+    p.add_argument("--clip-cy", type=float, default=0.0, help="Hero clip centre Y in mesh metres")
+    p.add_argument("--max-buildings", type=int, default=0, help="0 = preset cap")
     return p.parse_args(argv)
 
 
@@ -62,13 +74,32 @@ def clear_scene():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
+def _set_bsdf(bsdf, name: str, value) -> None:
+    sock = bsdf.inputs.get(name)
+    if sock is None:
+        return
+    try:
+        sock.default_value = value
+    except (TypeError, ValueError):
+        pass
+
+
 def mat(name: str, rgba: tuple[float, float, float, float]):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     bsdf = m.node_tree.nodes.get("Principled BSDF")
+    spec = SOLARPUNK_MATERIALS.get(name, {})
     if bsdf:
-        bsdf.inputs["Base Color"].default_value = rgba
-        bsdf.inputs["Roughness"].default_value = 0.72
+        _set_bsdf(bsdf, "Base Color", spec.get("rgba", rgba))
+        _set_bsdf(bsdf, "Roughness", spec.get("roughness", 0.72))
+        _set_bsdf(bsdf, "Metallic", spec.get("metallic", 0.0))
+        emission = spec.get("emission")
+        if emission is not None:
+            _set_bsdf(bsdf, "Emission Color", emission)
+            _set_bsdf(bsdf, "Emission", emission)
+        strength = float(spec.get("emission_strength") or 0.0)
+        if strength:
+            _set_bsdf(bsdf, "Emission Strength", strength)
     return m
 
 
@@ -206,8 +237,51 @@ def apply_eevee(scene):
     scene.eevee.taa_samples = 8
     scene.eevee.use_shadows = False
     scene.eevee.use_volumetric_shadows = False
+    scene.unit_settings.system = "METRIC"
+    scene.unit_settings.scale_length = 1.0  # 1 Blender unit = 1 metre
     for view in scene.view_layers:
         view.use_pass_z = False
+
+
+def lantern_box(x, y, z=4.2, half=0.18, h=0.45):
+    verts = [
+        (x - half, y - half, z),
+        (x + half, y - half, z),
+        (x + half, y + half, z),
+        (x - half, y + half, z),
+        (x - half, y - half, z + h),
+        (x + half, y - half, z + h),
+        (x + half, y + half, z + h),
+        (x - half, y + half, z + h),
+    ]
+    faces = [
+        (0, 1, 2, 3),
+        (4, 5, 6, 7),
+        (0, 1, 5, 4),
+        (1, 2, 6, 5),
+        (2, 3, 7, 6),
+        (3, 0, 4, 7),
+    ]
+    return np.array(verts, dtype=np.float64), faces
+
+
+def export_gltf(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    kwargs = {
+        "filepath": str(path),
+        "export_format": "GLB",
+        "export_yup": True,
+        "export_apply": True,
+        "export_cameras": False,
+        "export_lights": False,
+        "export_extras": True,
+        "export_animations": False,
+    }
+    try:
+        bpy.ops.export_scene.gltf(**kwargs)
+    except TypeError:
+        bpy.ops.export_scene.gltf(filepath=str(path), export_format="GLB")
+    print(f"wrote glTF {path}", flush=True)
 
 
 def stats_dump(path: Path, t0: float, preset: str):
@@ -247,7 +321,18 @@ def stats_dump(path: Path, t0: float, preset: str):
     return payload
 
 
-def build(city_path: Path, preset_name: str, out_path: Path):
+def build(
+    city_path: Path,
+    preset_name: str,
+    out_path: Path,
+    *,
+    export: str = "blend",
+    out_gltf: Path | None = None,
+    hero_radius: float = 0.0,
+    clip_cx: float = 0.0,
+    clip_cy: float = 0.0,
+    max_buildings: int = 0,
+):
     t0 = time.perf_counter()
     preset = PRESETS[preset_name]
     city = json.loads(city_path.read_text(encoding="utf-8"))
@@ -255,6 +340,9 @@ def build(city_path: Path, preset_name: str, out_path: Path):
     join = bool(preset["join"])
     step = float(preset["road_step"])
     box = bool(preset.get("box_buildings"))
+    radius = float(hero_radius)
+    clip = (float(clip_cx), float(clip_cy))
+    cap = int(max_buildings) if max_buildings else int(preset["max_buildings"])
     clear_scene()
     scene = bpy.context.scene
     apply_eevee(scene)
@@ -264,10 +352,26 @@ def build(city_path: Path, preset_name: str, out_path: Path):
     coll_bldg = bpy.data.collections.new("Buildings")
     coll_ix = bpy.data.collections.new("Intersections")
     coll_env = bpy.data.collections.new("Environment")
-    for c in (coll_roads, coll_bldg, coll_ix, coll_env):
+    coll_lights = bpy.data.collections.new("Lanterns")
+    for c in (coll_roads, coll_bldg, coll_ix, coll_env, coll_lights):
         scene.collection.children.link(c)
 
-    minx, miny, maxx, maxy = city["meta"]["bbox_m"]
+    meta = city.get("meta") or {}
+    origin_ll = meta.get("origin_lonlat") or [-88.147, 41.75]
+    origin = bpy.data.objects.new("UTM16N_Origin", None)
+    origin.empty_display_type = "PLAIN_AXES"
+    origin["crs"] = meta.get("crs") or "EPSG:32616"
+    origin["origin_lon"] = float(origin_ll[0])
+    origin["origin_lat"] = float(origin_ll[1])
+    origin["units"] = "metres"
+    origin["up"] = "+Z"
+    scene.collection.objects.link(origin)
+
+    if radius > 0:
+        minx, maxx = clip[0] - radius, clip[0] + radius
+        miny, maxy = clip[1] - radius, clip[1] + radius
+    else:
+        minx, miny, maxx, maxy = city["meta"]["bbox_m"]
     ground_v = np.array(
         [
             (minx, miny, -0.05),
@@ -282,7 +386,10 @@ def build(city_path: Path, preset_name: str, out_path: Path):
 
     road_tiles: dict = {}
     for road in city["roads"]:
-        strip = road_strip(road["coords"], max(4.0, float(road["width"])), step)
+        coords = road["coords"]
+        if not coords or not hero_keep(coords[0][0], coords[0][1], radius, clip[0], clip[1]):
+            continue
+        strip = road_strip(coords, max(4.0, float(road["width"])), step)
         if strip is None:
             continue
         verts, faces = strip
@@ -306,7 +413,8 @@ def build(city_path: Path, preset_name: str, out_path: Path):
             add_object(f"Road_{key[1]}", mesh, material=mats["asphalt"], collection=coll_roads)
 
     bldg_tiles: dict = {}
-    for b in city["buildings"][: preset["max_buildings"]]:
+    kept = [b for b in city["buildings"] if hero_keep(b["cx"], b["cy"], radius, clip[0], clip[1])][:cap]
+    for b in kept:
         extruded = extrude_building(b["rings"][0], float(b["height"]), box)
         if extruded is None:
             continue
@@ -324,12 +432,12 @@ def build(city_path: Path, preset_name: str, out_path: Path):
             verts, faces = packed
             mesh = mesh_from_arrays(f"bldg_{key[0]}_{key[1]}", verts, faces)
             avg_h = sum(h for _v, _f, h in chunks) / len(chunks)
-            mat_use = mats["tower"] if avg_h > 14 else mats["building"]
+            mat_use = mats["copper"] if avg_h > 14 else mats["limestone"]
             add_object(f"Buildings_{key[0]}_{key[1]}", mesh, location=(ox, oy, 0), material=mat_use, collection=coll_bldg)
         else:
             verts, faces, h = chunks[0]
             mesh = mesh_from_arrays(f"bldg_{key[1]}", verts, faces)
-            add_object(f"Building_{key[1]}", mesh, material=mats["building"], collection=coll_bldg)
+            add_object(f"Building_{key[1]}", mesh, material=mats["limestone"], collection=coll_bldg)
 
     def flat_polys(items, name, coll, material, z):
         chunks = []
@@ -337,6 +445,8 @@ def build(city_path: Path, preset_name: str, out_path: Path):
             ring = it["rings"][0]
             base = ring[:-1] if ring and ring[0] == ring[-1] else ring
             if len(base) < 3:
+                continue
+            if not hero_keep(base[0][0], base[0][1], radius, clip[0], clip[1]):
                 continue
             verts = np.array([(p[0], p[1], z) for p in base], dtype=np.float64)
             chunks.append((verts, [tuple(range(len(base)))]))
@@ -346,13 +456,16 @@ def build(city_path: Path, preset_name: str, out_path: Path):
         mesh = mesh_from_arrays(name, packed[0], packed[1])
         add_object(name, mesh, material=material, collection=coll)
 
-    flat_polys(city["parks"], "Parks", coll_env, mats["park"], 0.02)
+    flat_polys(city["parks"], "Parks", coll_env, mats["moss"], 0.02)
     flat_polys(city["water"], "Water", coll_env, mats["water"], 0.01)
 
-    # Slot pads at every intersection. Former signals glow differently.
+    # Slot pads at every intersection. Retired signals stay coral pads, not heads.
     ix_chunks_slot = []
     ix_chunks_old = []
+    lantern_chunks = []
     for ix in city["intersections"]:
+        if not hero_keep(ix["x"], ix["y"], radius, clip[0], clip[1]):
+            continue
         r = max(6.0, float(ix["radius"]) * 0.55)
         segs = 12
         verts = [(ix["x"], ix["y"], 0.08)]
@@ -364,6 +477,7 @@ def build(city_path: Path, preset_name: str, out_path: Path):
             faces_idx.append((0, 1 + i, 1 + ((i + 1) % segs)))
         arr = np.array(verts, dtype=np.float64)
         (ix_chunks_old if ix.get("had_signals") else ix_chunks_slot).append((arr, faces_idx))
+        lantern_chunks.append(lantern_box(ix["x"], ix["y"]))
     if ix_chunks_slot:
         packed = combine(ix_chunks_slot, 0, 0)
         mesh = mesh_from_arrays("slot_pads", packed[0], packed[1])
@@ -371,14 +485,18 @@ def build(city_path: Path, preset_name: str, out_path: Path):
     if ix_chunks_old:
         packed = combine(ix_chunks_old, 0, 0)
         mesh = mesh_from_arrays("retired_signals", packed[0], packed[1])
-        add_object("RetiredSignals", mesh, material=mats["signal"], collection=coll_ix)
+        add_object("RetiredSignals", mesh, material=mats["retired_pad"], collection=coll_ix)
+    if lantern_chunks:
+        packed = combine(lantern_chunks, 0, 0)
+        mesh = mesh_from_arrays("lanterns", packed[0], packed[1])
+        add_object("WarmLanterns", mesh, material=mats["lantern"], collection=coll_lights)
 
     # Camera over downtown centroid.
     cam_d = bpy.data.cameras.new("Overview")
     cam_d.clip_end = 80000
     cam_d.lens = 24
     cam = bpy.data.objects.new("Overview", cam_d)
-    cam.location = (0, -1800, 1400)
+    cam.location = (clip[0], clip[1] - 1800, 1400)
     cam.rotation_euler = (math.radians(52), 0, 0)
     scene.collection.objects.link(cam)
     scene.camera = cam
@@ -391,9 +509,18 @@ def build(city_path: Path, preset_name: str, out_path: Path):
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=str(out_path), compress=True)
+    if export == "gltf" and out_gltf is not None:
+        export_gltf(out_gltf)
     stats_path = STATS_DIR / f"{preset_name}.json"
     payload = stats_dump(stats_path, t0, preset_name)
     payload["blend"] = str(out_path)
+    if export == "gltf" and out_gltf is not None:
+        payload["gltf"] = str(out_gltf)
+        payload["hero_radius_m"] = radius
+        payload["hero_clip_center_mesh_m"] = [clip[0], clip[1]]
+        payload["units"] = "metres"
+        payload["blender_up"] = "+Z"
+        payload["gltf_up"] = "+Y"
     stats_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(json.dumps(payload))
 
@@ -401,7 +528,18 @@ def build(city_path: Path, preset_name: str, out_path: Path):
 def main():
     args = parse_args()
     out = Path(args.out) if args.out else OUT_DIR / f"naperville_{args.preset}.blend"
-    build(Path(args.city), args.preset, out)
+    gltf = Path(args.out_gltf) if args.out_gltf else default_glb_path(ROOT, args.preset)
+    build(
+        Path(args.city),
+        args.preset,
+        out,
+        export=args.export,
+        out_gltf=gltf,
+        hero_radius=args.hero_radius,
+        clip_cx=args.clip_cx,
+        clip_cy=args.clip_cy,
+        max_buildings=args.max_buildings,
+    )
 
 
 if __name__ == "__main__":

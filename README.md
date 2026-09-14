@@ -111,17 +111,20 @@ Open `http://127.0.0.1:43147`. Kennedy inbound at 07:30 is the default clock.
 ```bash
 python3 scripts/fetch_naperville.py
 python3 scripts/process_city.py
-python3 scripts/build_blender.py --source osm --preset tiled_500
+python3 scripts/build_blender.py --source osm --preset tiled_500 --export gltf
 ```
 
-Export the winning `.blend` as **glTF 2.0**, metres, origin =
-`data/processed/city.json` (`origin_lonlat`). Open
+Unreal target: **`output/gltf/naperville_tiled_500.glb`** plus sidecar
+`output/gltf/naperville_tiled_500.import.json` (metres, Blender +Z → glTF +Y →
+Unreal +Z, import scale **100**). Open
 [`unreal/SmartCityHero/SmartCityHero.uproject`](unreal/SmartCityHero/SmartCityHero.uproject)
-and drop the file into **`Content/City/Naperville/Import`**. Cesium georeference
-uses downtown **−88.147, 41.75** (UTM 16N); see
-[`unreal/SmartCityHero/README.md`](unreal/SmartCityHero/README.md) if the glTF is
-still city.json-relative. Google 3D Tiles via Blosm wait for a billing key — OSM
-is the default. No key in this repo.
+and drop the GLB into **`Content/City/Naperville/Import`**. Mesh XY is relative
+to `city.json`; Unreal / Cesium / `SmartCityLive` stay on downtown
+**−88.147, 41.75** — place the actor using the sidecar `unreal.place_at`
+(see [`unreal/SmartCityHero/README.md`](unreal/SmartCityHero/README.md)).
+Google 3D Tiles via Blosm wait for a billing key. OSM is the default. No key
+in this repo. [unreal/PIPELINE.md](unreal/PIPELINE.md) ·
+[output/gltf/README.md](output/gltf/README.md).
 
 Next.js cinematic intersection (one weave vs lights): `npm install && npm run dev`
 → `http://127.0.0.1:43217`. That is a slot diagram, not the city.

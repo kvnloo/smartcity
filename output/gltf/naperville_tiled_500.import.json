@@ -1,0 +1,55 @@
+{
+  "asset": "naperville_tiled_500.glb",
+  "format": "glTF 2.0",
+  "source": "osm",
+  "preset": "tiled_500",
+  "units": "metres",
+  "scale": 1.0,
+  "crs": "EPSG:32616",
+  "origin_lonlat": [
+    -88.106604,
+    41.75421
+  ],
+  "origin_utm": [
+    408001.19,
+    4623078.76
+  ],
+  "hero_radius_m": 1500.0,
+  "hero_clip_center_mesh_m": [
+    -3364.64,
+    -423.49
+  ],
+  "axes": {
+    "blender": "+Z",
+    "gltf": "+Y",
+    "unreal": "+Z"
+  },
+  "unreal": {
+    "importer": "glTF importer (built-in) or Datasmith",
+    "import_uniform_scale": 100.0,
+    "convert_scene": true,
+    "world_partition_cell_m": 256,
+    "drop": "unreal/SmartCityHero/Content/City/Naperville/Import",
+    "place_at": [
+      336464.1,
+      42348.85,
+      0.0
+    ],
+    "origin_lonlat": [
+      -88.147,
+      41.75
+    ],
+    "cesium_georeference_origin_lonlat": [
+      -88.147,
+      41.75
+    ]
+  },
+  "notes": [
+    "Blender scene is metres, +Z up, XY = EPSG:32616 easting/northing relative to origin_lonlat (often the OSM centroid).",
+    "glTF 2.0 is metres, +Y up (Blender exporter converts Z-up \u2192 Y-up).",
+    "Unreal is centimetres, +Z up. If the mesh is 100\u00d7 too small, set import uniform scale to 100.",
+    "Unreal (0,0,0), Cesium, and SmartCityLive are downtown \u221288.147, 41.75. Place the actor at unreal.place_at.",
+    "Hero clip is 1.5 km around downtown in mesh XY (hero_clip_center_mesh_m), not around the OSM centroid.",
+    "This asset is OSM extrusion. Do not substitute Google Photorealistic 3D Tiles."
+  ]
+}

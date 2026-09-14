@@ -21,6 +21,10 @@ data/open/full/
 output/blends/*.blend1
 output/research/*.tmp
 output/sumo/
+output/gltf/*.glb
+output/gltf/*.gltf
+output/gltf/*.bin
+output/gltf/*.blend1
 *.log
 .env
 .env*
