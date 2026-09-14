@@ -1,0 +1,17 @@
+Drop OSM glTF here (metres). Content path: /Game/City/Naperville/Import
+
+Export from this repo:
+  python3 scripts/build_blender.py --source osm --preset tiled_500
+then File > Export > glTF 2.0 from the winning .blend.
+
+No Google Maps key. Do not paste billed 3D Tiles into this folder.
+
+Import Uniform Scale = 100 if the glTF is metres (Unreal = centimetres).
+Enable Nanite on buildings. Disable Nanite on rails / wires.
+
+World origin is downtown -88.147, 41.75 (UTM 16N). If the mesh is still
+relative to data/processed/city.json, place the actor at (336465, 42343, 0)
+or re-export with downtown as 0,0. See Config/Georef.json.
+
+Save the Open World as /Game/City/Naperville/L_NapervilleHero
+World Partition cell = 256 m (25600 UU). Skeletal cars only 80-120 m.

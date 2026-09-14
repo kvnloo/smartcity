@@ -1,0 +1,9 @@
+I-88 programmable extra lane (fictional: true in GET /twin).
+
+This is a bioswale + AV/bus chevron strip, not more asphalt.
+When SmartCityLive sets bI88BioswaleActive, move a barrier spline or
+toggle this strip. Do not rebuild the highway mesh. Do not add a
+twelfth travel lane of pavement.
+
+Peak inbound ~05:00-10:00 weekdays; reverse otherwise. Weekend idle.
+SmartCityLive reads lanes id=i88-solarpunk from GET /twin.

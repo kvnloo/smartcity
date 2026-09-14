@@ -113,9 +113,13 @@ python3 scripts/build_blender.py --source osm --preset tiled_500
 ```
 
 Export the winning `.blend` as **glTF 2.0**, metres, origin =
-`data/processed/city.json` (`origin_lonlat`). Drop into Unreal World Partition
-(UTM 16N). Cesium georeference uses the same origin so slot pads sit on SUMO
-edges. Google 3D Tiles via Blosm wait for a billing key — OSM is the default.
+`data/processed/city.json` (`origin_lonlat`). Open
+[`unreal/SmartCityHero/SmartCityHero.uproject`](unreal/SmartCityHero/SmartCityHero.uproject)
+and drop the file into **`Content/City/Naperville/Import`**. Cesium georeference
+uses downtown **−88.147, 41.75** (UTM 16N); see
+[`unreal/SmartCityHero/README.md`](unreal/SmartCityHero/README.md) if the glTF is
+still city.json-relative. Google 3D Tiles via Blosm wait for a billing key — OSM
+is the default. No key in this repo.
 
 Next.js cinematic intersection (one weave vs lights): `npm install && npm run dev`
 → `http://127.0.0.1:43217`. That is a slot diagram, not the city.

@@ -35,3 +35,17 @@ yarn-error.log*
 .pnpm-debug.log*
 site/node_modules/
 site/dist/
+
+# Unreal Engine 5 hero project (generated)
+unreal/SmartCityHero/Binaries/
+unreal/SmartCityHero/DerivedDataCache/
+unreal/SmartCityHero/Intermediate/
+unreal/SmartCityHero/Saved/
+unreal/SmartCityHero/Build/
+unreal/SmartCityHero/.vs/
+unreal/SmartCityHero/*.sln
+unreal/SmartCityHero/*.sln.DotSettings.user
+unreal/SmartCityHero/*.VC.db
+unreal/SmartCityHero/*.VC.opendb
+unreal/SmartCityHero/CompileCommands.json
+unreal/SmartCityHero/.idea/

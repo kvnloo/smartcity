@@ -1,0 +1,8 @@
+Solarpunk hero materials (match blender_scripts/build_city.py).
+
+Limestone buildings  — base 0.62 0.54 0.42  roughness ~0.72  Nanite on
+Copper towers        — base 0.55 0.36 0.22  roughness ~0.45  Nanite on
+Moss parks           — base 0.22 0.42 0.24
+Warm lanterns        — emissive amber, occupancy-dim via GET /lights
+Retired signal pads  — coral 0.82 0.42 0.22  (planters, not new heads)
+Asphalt stay dark    — 0.16 0.14 0.12  — I-88 extra lane is NOT this
