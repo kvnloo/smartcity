@@ -10,10 +10,10 @@ import {
   pose,
 } from "./geometry";
 
-const ROAD = "#171a22";
-const ROAD_EDGE = "#2a3144";
-const MARK = "rgba(214, 228, 255, 0.28)";
-const BOX_FILL = "rgba(70, 210, 255, 0.05)";
+const ROAD = "#2a3348";
+const ROAD_EDGE = "#6d7ea3";
+const MARK = "rgba(230, 240, 255, 0.55)";
+const BOX_FILL = "rgba(70, 210, 255, 0.10)";
 
 export interface RenderOptions {
   showTiles: boolean;
@@ -29,6 +29,7 @@ export function renderSim(
   height: number,
   options: RenderOptions,
 ): void {
+  if (width < 2 || height < 2) return;
   const dpr = Math.max(1, window.devicePixelRatio || 1);
   if (ctx.canvas.width !== Math.floor(width * dpr) || ctx.canvas.height !== Math.floor(height * dpr)) {
     ctx.canvas.width = Math.floor(width * dpr);
@@ -57,9 +58,9 @@ export function renderSim(
 
 function drawBackdrop(ctx: CanvasRenderingContext2D, w: number, h: number): void {
   const g = ctx.createRadialGradient(w * 0.5, h * 0.42, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
-  g.addColorStop(0, "#152033");
-  g.addColorStop(0.55, "#0c111b");
-  g.addColorStop(1, "#07090e");
+  g.addColorStop(0, "#24344f");
+  g.addColorStop(0.55, "#121826");
+  g.addColorStop(1, "#0a1018");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 }
@@ -216,10 +217,8 @@ function drawLights(
   for (const p of posts) {
     const color = p.ns ? nsColor : ewColor;
     const lit = p.ns ? nsOn : ewOn;
-    ctx.beginPath();
     ctx.fillStyle = "#0d1118";
-    ctx.roundRect(toX(p.x) - 6, toY(p.y) - 14, 12, 28, 4);
-    ctx.fill();
+    fillRoundRect(ctx, toX(p.x) - 6, toY(p.y) - 14, 12, 28, 4);
     ctx.beginPath();
     ctx.fillStyle = color;
     ctx.shadowColor = color;
@@ -249,8 +248,8 @@ function drawCars(
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(p.heading);
-    const len = CAR_LENGTH * scale;
-    const wid = CAR_WIDTH * scale;
+    const len = Math.max(16, CAR_LENGTH * scale);
+    const wid = Math.max(8, CAR_WIDTH * scale);
     ctx.shadowColor = car.color;
     ctx.shadowBlur = inBox ? 18 : 10;
     ctx.fillStyle = "rgba(8, 10, 16, 0.45)";
@@ -293,13 +292,24 @@ function drawCars(
 }
 
 function drawHud(ctx: CanvasRenderingContext2D, width: number, label: string, mode: string): void {
-  ctx.fillStyle = "rgba(6, 10, 16, 0.55)";
-  ctx.beginPath();
-  ctx.roundRect(12, 12, 188, 36, 10);
-  ctx.fill();
+  ctx.fillStyle = "rgba(6, 10, 16, 0.72)";
+  fillRoundRect(ctx, 12, 12, 200, 36, 10);
   ctx.fillStyle = mode === "slot" ? "#7CFFD0" : "#FFC978";
   ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
   ctx.fillText(label, 24, 35);
+}
+
+function fillRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  ctx.beginPath();
+  roundRect(ctx, x, y, w, h, r);
+  ctx.fill();
 }
 
 function roundRect(

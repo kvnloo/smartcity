@@ -7,7 +7,6 @@ import { PaperPanel } from "@/components/paper-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { TrafficSim, type SimSnapshot } from "@/lib/sim/engine";
 import { DEFAULT_CONFIG, type SimConfig, type SpeedRegime, type ViewMode } from "@/lib/sim/geometry";
@@ -29,13 +28,13 @@ const EMPTY: SimSnapshot = {
 export function CitySim() {
   const [view, setView] = useState<ViewMode>("split");
   const [paused, setPaused] = useState(false);
-  const [zoom, setZoom] = useState(2.05);
+  const [zoom, setZoom] = useState(3.4);
   const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
   const [slotStats, setSlotStats] = useState<SimSnapshot>(EMPTY);
   const [lightStats, setLightStats] = useState<SimSnapshot>(EMPTY);
   const seedRef = useRef(7);
-  const slotSimRef = useRef(new TrafficSim({ ...DEFAULT_CONFIG, mode: "slot" }, 7));
-  const lightSimRef = useRef(new TrafficSim({ ...DEFAULT_CONFIG, mode: "lights" }, 7));
+  const slotSimRef = useRef(makeSim("slot", 7));
+  const lightSimRef = useRef(makeSim("lights", 7));
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -54,8 +53,10 @@ export function CitySim() {
     lightSimRef.current.reset(seedRef.current);
     slotSimRef.current.setConfig({ ...config, mode: "slot" });
     lightSimRef.current.setConfig({ ...config, mode: "lights" });
-    setSlotStats(EMPTY);
-    setLightStats(EMPTY);
+    slotSimRef.current.warmup(20);
+    lightSimRef.current.warmup(20);
+    setSlotStats(slotSimRef.current.snapshot());
+    setLightStats(lightSimRef.current.snapshot());
   };
 
   const patch = (partial: Partial<SimConfig>) => setConfig((c) => ({ ...c, ...partial }));
@@ -141,45 +142,51 @@ export function CitySim() {
                 </div>
               </div>
 
-              <Field label="Traffic density" value={`${config.arrivalPerLane.toFixed(2)} veh/s per lane`}>
-                <Slider
-                  min={0}
-                  max={0.22}
-                  step={0.01}
-                  value={[config.arrivalPerLane]}
-                  onValueChange={(v) => patch({ arrivalPerLane: first(v) })}
-                />
-              </Field>
-              <Field label="Cruise speed" value={`${config.cruiseMph} mph`}>
-                <Slider
-                  min={90}
-                  max={120}
-                  step={1}
-                  value={[config.cruiseMph]}
-                  onValueChange={(v) => patch({ cruiseMph: first(v) })}
-                />
-              </Field>
-              <Field label="Crossing speed" value={`${config.crossMph} mph`}>
-                <Slider
-                  min={30}
-                  max={55}
-                  step={1}
-                  value={[config.crossMph]}
-                  onValueChange={(v) => patch({ crossMph: first(v) })}
-                />
-              </Field>
-              <Field label="Playback" value={`${config.timeScale.toFixed(2)}×`}>
-                <Slider
-                  min={0.25}
-                  max={1.4}
-                  step={0.05}
-                  value={[config.timeScale]}
-                  onValueChange={(v) => patch({ timeScale: first(v) })}
-                />
-              </Field>
-              <Field label="Camera" value={zoom > 2.4 ? "Intersection" : "Approaches"}>
-                <Slider min={1.35} max={3.2} step={0.05} value={[zoom]} onValueChange={(v) => setZoom(first(v))} />
-              </Field>
+              <RangeField
+                label="Traffic density"
+                display={`${config.arrivalPerLane.toFixed(2)} veh/s per lane`}
+                min={0}
+                max={0.22}
+                step={0.01}
+                value={config.arrivalPerLane}
+                onChange={(v) => patch({ arrivalPerLane: v })}
+              />
+              <RangeField
+                label="Cruise speed"
+                display={`${config.cruiseMph} mph`}
+                min={90}
+                max={120}
+                step={1}
+                value={config.cruiseMph}
+                onChange={(v) => patch({ cruiseMph: v })}
+              />
+              <RangeField
+                label="Crossing speed"
+                display={`${config.crossMph} mph`}
+                min={30}
+                max={55}
+                step={1}
+                value={config.crossMph}
+                onChange={(v) => patch({ crossMph: v })}
+              />
+              <RangeField
+                label="Playback"
+                display={`${config.timeScale.toFixed(2)}×`}
+                min={0.25}
+                max={1.4}
+                step={0.05}
+                value={config.timeScale}
+                onChange={(v) => patch({ timeScale: v })}
+              />
+              <RangeField
+                label="Camera"
+                display={zoom > 2.8 ? "Intersection" : "Approaches"}
+                min={1.6}
+                max={4.6}
+                step={0.05}
+                value={zoom}
+                onChange={setZoom}
+              />
 
               <Separator />
 
@@ -238,17 +245,17 @@ function SimPane({
   className?: string;
 }) {
   return (
-    <div className={`relative min-h-[420px] overflow-hidden rounded-2xl ring-1 ring-white/10 ${className ?? ""}`}>
-      <SimCanvas
-        simRef={simRef}
-        config={config}
-        paused={paused}
-        zoom={zoom}
-        label={label}
-        onStats={onStats}
-        className="absolute inset-0"
-      />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+    <div className={className}>
+      <div className="relative">
+        <SimCanvas
+          simRef={simRef}
+          config={config}
+          paused={paused}
+          zoom={zoom}
+          label={label}
+          onStats={onStats}
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Stat k="Throughput" v={`${Math.round(stats.throughputPerHour)} /h`} />
           <Stat k="Mean speed" v={`${Math.round(stats.meanMph)} mph`} />
@@ -266,6 +273,7 @@ function SimPane({
           {stats.collisions} overlapping paths
         </div>
       ) : null}
+      </div>
     </div>
   );
 }
@@ -279,23 +287,45 @@ function Stat({ k, v }: { k: string; v: string }) {
   );
 }
 
-function Field({
+function makeSim(mode: "slot" | "lights", seed: number): TrafficSim {
+  const sim = new TrafficSim({ ...DEFAULT_CONFIG, mode }, seed);
+  sim.warmup(20);
+  return sim;
+}
+
+function RangeField({
   label,
+  display,
+  min,
+  max,
+  step,
   value,
-  children,
+  onChange,
 }: {
   label: string;
-  value: string;
-  children: ReactNode;
+  display: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (value: number) => void;
 }) {
   return (
-    <div className="block space-y-2">
+    <label className="block space-y-2">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-zinc-200">{label}</span>
-        <span className="font-mono text-xs text-cyan-200/80">{value}</span>
+        <span className="font-mono text-xs text-cyan-200/80">{display}</span>
       </div>
-      {children}
-    </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-cyan-300"
+      />
+    </label>
   );
 }
 
@@ -319,11 +349,6 @@ function ToggleRow({
       <Switch checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   );
-}
-
-function first(v: number | readonly number[]): number {
-  if (typeof v === "number") return v;
-  return v[0] ?? 0;
 }
 
 function ModeButton({

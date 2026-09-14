@@ -87,6 +87,12 @@ export class TrafficSim {
     this.config = { ...config };
   }
 
+  warmup(seconds: number): void {
+    const dt = 0.02;
+    const steps = Math.max(1, Math.floor(seconds / dt));
+    for (let i = 0; i < steps; i++) this.step(dt);
+  }
+
   reset(seed = 1): void {
     this.time = 0;
     this.cars = [];
