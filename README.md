@@ -41,12 +41,35 @@ npm run dev
 
 Open `http://127.0.0.1:43217`.
 
-## Maps and Blender
+## How the Blender city is built (not a Google Maps scrape)
+
+We are **not** pulling Google Maps into Blender. Scraping Maps / Street View tiles into a mesh is against Google’s terms.
+
+**What runs today**
+
+1. `scripts/fetch_naperville.py` downloads **OpenStreetMap** (Overpass): roads, building footprints, parks, water, signal heads, city boundary.
+2. `scripts/process_city.py` projects that to metres (UTM 16N) → `data/processed/city.json`.
+3. `blender_scripts/build_city.py` **extrudes** those 2D footprints into boxes and road strips, then tiles/joins meshes so EEVEE stays real-time.
+
+That is why the `.blend` looks schematic (prisms on a ground plane), and why many houses are missing: OSM building coverage in Naperville is incomplete. It is also why slot pads line up with the traffic graph — both come from the same OSM ways.
+
+**The real Google path: Photorealistic 3D Tiles + Blosm**
+
+The project that reconstructs *textured* Google cities in Blender is **[Blosm](https://github.com/vvoovv/blosm/wiki/Import-of-Google-3D-Cities)** talking to the official [Map Tiles API](https://developers.google.com/maps/documentation/tile/3d-tiles). You need a billing-enabled, unrestricted API key. Blosm warns: start at ~1×1 km; a few km² at high LOD is millions of triangles.
+
+```bash
+export GOOGLE_MAPS_API_KEY=your_key   # Maps Tiles API enabled
+python3 scripts/build_blender.py --source google --extent downtown --lod lod3
+```
+
+`--extent city` walks the OSM bbox in ~1 km tiles. High LOD (`lod5`) plus the whole city will hammer quota and the viewport.
+
+Until a key is set, use the OSM extrusion path:
 
 ```bash
 python3 scripts/fetch_naperville.py
 python3 scripts/process_city.py
-blender --background --python blender_scripts/build_city.py -- --preset tiled_500
+python3 scripts/build_blender.py --source osm --preset tiled_500
 python3 scripts/research_loop.py
 ```
 
