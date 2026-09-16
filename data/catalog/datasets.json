@@ -12,7 +12,8 @@
     "micro": "Eclipse SUMO + TraCI + this repo's slot/AIM pads",
     "meso": "SUMO meso / cell-transmission",
     "macro": "Census LODES + GTFS + tidal-lane clock",
-    "do_not_write": ["custom traffic engine", "custom GIS scraper", "CARLA at metro scale", "Google Maps scrape"]
+    "calibration_candidate": "JAX differentiable twin (Chicago Sketch). MOSS is a CUDA validator candidate — not default micro.",
+    "do_not_write": ["custom traffic engine", "custom GIS scraper", "CARLA at metro scale", "Google Maps scrape", "LLM in the 50-100 Hz loop"]
   },
   "datasets": [
     {
@@ -87,6 +88,13 @@
       "access": "open",
       "url": "https://data.cityofchicago.org/resource/kf7e-cur8.json",
       "notes": "Traffic Tracker historical speeds by region (bus GPS). Calibrates the diurnal, not a substitute for expressway probes."
+    },
+    {
+      "id": "chicago-traffic-tracker-segments",
+      "theme": "traffic_rt_proxy",
+      "access": "open",
+      "url": "https://data.cityofchicago.org/Transportation/Chicago-Traffic-Tracker-Historical-Congestion-Estim/sru5-3e5j",
+      "notes": "10-minute arterial speed estimates on 1000+ segments from CTA bus GPS. Join on GERS/OSM later; do not treat 0 as a parking lot."
     },
     {
       "id": "chicago-traffic-regions",

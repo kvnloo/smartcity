@@ -13,7 +13,7 @@ This project follows the [Verified OSS Loop](https://github.com/kvnloo/verified-
 | `src/` | Next.js cinematic intersection | visual; no unit script yet |
 | `unreal/`, Blender scripts | Hero street. **Unreal** + Blender (not Unity) | pipeline docs, not this page |
 
-Galaxy S25 Ultra (`SM-S938`) gets ultra LOD (terrain + extruded OSM). Other phones load less. Do not put SUMO/Unreal in `site/`. Hero renderer is Unreal, not Unity.
+Galaxy S25 Ultra (`SM-S938`) gets ultra LOD (terrain + extruded OSM). Other phones load less. Do not put SUMO/Unreal in `site/`. Hero renderer is Unreal, not Unity. Do not replace SUMO with MOSS without the 3080 Ti bench in `docs/RESEARCH.md`. Do not put an LLM in the live control loop.
 
 ## First 60 seconds
 

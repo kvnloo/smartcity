@@ -111,7 +111,7 @@ Geofabrik / Overpass / Overture
         ▼
    Unreal World Partition  ← Cesium terrain
         ▲
-        │ TraCI / UDP
+        │ WebSocket /twin + /ws
    SUMO micro/meso  ← FastAPI slot clock + tidal lanes
         ▲
         │
@@ -126,6 +126,11 @@ Details: `unreal/PIPELINE.md`. SUMO adapter: `python3 scripts/build_sumo_net.py`
 (writes plain XML; compiles `.net.xml` when netconvert exists). TraCI loop:
 `smartcity micro` (Eclipse SUMO) or the in-process mock when SUMO is missing.
 Install: `docs/SUMO.md`. Slot/AIM pads stay in `smartcity.slots`.
+
+Calibration / nowcast (candidate, not default): a JAX differentiable twin on
+Chicago Sketch-scale graphs — [docs/RESEARCH.md](RESEARCH.md). MOSS is a CUDA
+micro **validator** candidate on the 3080 Ti. It does not replace SUMO until
+that bench exists. An LLM does not sit in the 50–100 Hz loop.
 
 ## Solarpunk rules of taste
 

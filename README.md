@@ -24,6 +24,7 @@ The idea dump (solarpunk, papers, what we will not build) lives in
 Data: [docs/DATA.md](docs/DATA.md). Pages clicks: [docs/PAGES.md](docs/PAGES.md).
 Unreal: [unreal/PIPELINE.md](unreal/PIPELINE.md).
 Live HTTP/WebSocket field names: [docs/LIVE_CONTRACT.md](docs/LIVE_CONTRACT.md).
+Research loop ingest: [docs/RESEARCH.md](docs/RESEARCH.md).
 
 ## Three products, one geology
 

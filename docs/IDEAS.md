@@ -59,6 +59,17 @@ It does not have Unreal, SUMO, or 400k vehicles. LOD:
 
 MapLibre is dynamically imported. Mosaic devices skip the 800 kB GL chunk.
 
+## Two kernels (research ingest)
+
+A 2026-09-16 research loop ([docs/RESEARCH.md](RESEARCH.md)) argued: do not make
+one GPU micro-simulator the brain. Calibrate / nowcast / search policy on a
+**differentiable** kernel (JAX, Chicago Sketch paper). Validate ugly
+car-following on **SUMO** (default) or **MOSS** (CUDA candidate on the 3080 Ti).
+Join observations on **Overture GERS** into GeoParquet + DuckDB. Precompute
+CMAP/ActivitySim plans; never tick ActivitySim at 0.25 s.
+
+The loop could not see `kvnloo/smartcity` yet. This tree is the ground truth.
+
 ## Traffic ideas we will actually implement
 
 1. **Kennedy REVLAC as a first-class clock** — already real. Expose inbound/outbound, never “invent” Chicago’s zipper.
@@ -101,9 +112,11 @@ The future is not a glass torus and not a twelfth lane of I-88.
 | Arterial road-diet sandbox | A/B Street |
 | Transit router | OTP / GTFS libs |
 | 400k `AActor` cars | Mass / Niagara; skeletal only inside ~80 m |
-| CARLA as the metro | CARLA is a driving school |
+| CARLA as the metro | CARLA is a driving school; microscope later, never Chicagoland |
 | Cities: Skylines demand | LODES + GTFS |
 | Unity “just in case” | Unreal only |
+| MOSS as the default brain | SUMO until a 3080 Ti bench; JAX calibrates, MOSS may validate |
+| LLM at 50–100 Hz | Hierarchical AIM / CBF; LLM designs policies, does not steer |
 
 ## Hardware envelope
 
@@ -130,7 +143,7 @@ Geofabrik / Overpass / Overture
         ▼
    Unreal World Partition  ← Cesium terrain
         ▲
-        │ TraCI / UDP
+        │ WebSocket /twin + /ws
    SUMO micro/meso  ← FastAPI slot clock + tidal lanes
         ▲
         │
