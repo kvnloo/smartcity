@@ -7,24 +7,16 @@ This is the mobile lookdev site in `site/`, not the Unreal/SUMO twin. CI on
 deploys `site/dist` through GitHub Actions. `.nojekyll` lives in
 `site/public` so the build copies it into the artifact. No repository secrets.
 
-## After you click Create repository
+## GitHub home
 
-You (the human) click **Create repository** on GitHub as public
-**kvnloo/smartcity**. Do not let an agent create it. Push this tree (at least
-`nightly`). Then enable Pages:
+Public repo: **https://github.com/kvnloo/smartcity** (default branch `nightly`).
+Pages source is **GitHub Actions**, not `gh-pages` / `main` / `/docs`.
+
+If Pages is ever reset:
 
 1. Open **https://github.com/kvnloo/smartcity**
-2. Click the **Settings** tab under the repository name. If the tab is hidden, click the **⋯** dropdown → **Settings**.
-3. In the left sidebar, in the **Code, planning, and automation** section, click **Pages**.
-4. On the Pages screen, find **Build and deployment**.
-5. Under **Source**, open the dropdown. It may say **Deploy from a branch**.
-6. Click **GitHub Actions**. Do **not** click **Deploy from a branch**. Do **not** pick `gh-pages`, `main`, or `/docs`.
-7. If GitHub lists workflow templates, skip them. This repo already ships `.github/workflows/verified-oss-loop.yml`.
-8. Leave **Custom domain** empty.
-9. Leave **Enforce HTTPS** checked (default for `*.github.io`).
-10. If a **Save** button is shown, click **Save**. Some accounts persist the source as soon as you pick GitHub Actions.
-
-That is the whole Settings path: **Settings → Pages → Source → GitHub Actions**.
+2. **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+3. Leave **Custom domain** empty. Leave **Enforce HTTPS** on.
 
 ## First publish
 
