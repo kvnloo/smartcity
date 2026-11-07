@@ -11,14 +11,6 @@ from dataclasses import dataclass
 
 from smartcity.geo import utm
 
-# CMAP 7-county + NW Indiana fringe
-CHICAGOLAND_BBOX = {
-    "west": -88.71,
-    "south": 41.20,
-    "east": -87.02,
-    "north": 42.50,
-}
-
 NAPERVILLE = {"lon": -88.147, "lat": 41.750}
 
 # Local-metre origin for the Naperville mesh / SUMO / /ws x_m,y_m. Must match
@@ -83,8 +75,6 @@ DISTRICTS = [
     {"id": "gary", "name": "Gary", "lon": -87.337, "lat": 41.593, "role": "home", "pop_k": 69},
     {"id": "waukegan", "name": "Waukegan", "lon": -87.845, "lat": 42.364, "role": "home", "pop_k": 89},
 ]
-
-DISTRICT_BY_ID = {d["id"]: d for d in DISTRICTS}
 
 # Expressway / rail corridors that actually move the suburb–core commute.
 # Coordinates are schematic centerlines (good enough for the ops map until

@@ -1,6 +1,5 @@
-from smartcity.config import SimConfig
 from smartcity.model import load_city
-from smartcity.sim import CitySim, demo_metrics
+from smartcity.sim import demo_metrics
 
 
 def test_naperville_graph_is_connected_enough():

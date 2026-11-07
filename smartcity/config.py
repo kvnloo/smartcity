@@ -23,7 +23,6 @@ CRUISE_CAP_MPH = 45.0
 ARTERIAL_CAP_MPH = 45.0
 MOTORWAY_CAP_MPH = 55.0
 CROSSING_MPH = 35.0
-RESIDENTIAL_MPH = 25.0
 
 # 8 km micro ring. SUMO ticks this; Unreal only cameras it.
 MICRO_TICK_S = 0.25
@@ -31,8 +30,6 @@ MICRO_RADIUS_KM = 8.0
 
 DEFAULT_ACCEL = 2.4  # m/s^2 comfortable AV
 DEFAULT_DECEL = 3.2
-VEHICLE_LENGTH_M = 4.6
-MIN_GAP_M = 2.0
 
 HIGHWAY_SPEED_MPH = {
     "motorway": 55.0,

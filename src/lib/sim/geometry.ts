@@ -23,7 +23,7 @@ export const CRUISE_MPH_MAX = 120;
 export const CRUISE_MPH_DEFAULT = 105;
 export const CROSS_MPH_MIN = 30;
 export const CROSS_MPH_MAX = 55;
-export const CROSS_MPH_DEFAULT = 45;
+const CROSS_MPH_DEFAULT = 45;
 
 export const DEFAULT_CONFIG: SimConfig = Object.freeze({
   mode: "slot",
@@ -59,7 +59,7 @@ export function sanitizeConfig(config: SimConfig): SimConfig {
   };
 }
 
-export const LANE_WIDTH = 3.6;
+const LANE_WIDTH = 3.6;
 export const CAR_LENGTH = 4.7;
 export const CAR_WIDTH = 1.85;
 export const PATH_HALF = 190;
@@ -84,7 +84,7 @@ export function boxSize(): number {
   return LANE_WIDTH * 4 + 2.4;
 }
 
-export function laneOffset(lane: number): number {
+function laneOffset(lane: number): number {
   return LANE_WIDTH * 0.5 + lane * LANE_WIDTH;
 }
 
