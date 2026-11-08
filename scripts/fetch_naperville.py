@@ -14,14 +14,13 @@ from pathlib import Path
 from typing import Any
 
 import requests
-from shapely.geometry import LineString, MultiPolygon, Point, Polygon, shape
+from shapely.geometry import LineString, MultiPolygon, Point, Polygon
 from shapely.ops import unary_union
 from shapely.validation import make_valid
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 OSM_RELATION = 124885  # Naperville city boundary
-AREA_ID = 3600000000 + OSM_RELATION
 
 OVERPASS_ENDPOINTS = [
     "https://overpass-api.de/api/interpreter",

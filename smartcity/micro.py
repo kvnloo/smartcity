@@ -19,7 +19,6 @@ from smartcity.twin.demand import diurnal_factor
 from smartcity.twin.lanes import minutes_of_day, snapshot as lane_snapshot
 from smartcity.twin.macro import step_macro
 
-TICK_S = MICRO_TICK_S
 RING = "micro"
 
 

@@ -7,8 +7,6 @@ unknown keys; producers must not drop keys listed on these models.
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -308,12 +306,3 @@ def json_schema_bundle() -> dict[str, dict]:
     return out
 
 
-def write_json_schemas(directory: Path | None = None) -> list[Path]:
-    target = directory or SCHEMA_DIR
-    target.mkdir(parents=True, exist_ok=True)
-    written: list[Path] = []
-    for name, schema in json_schema_bundle().items():
-        path = target / f"{name}.schema.json"
-        path.write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        written.append(path)
-    return written

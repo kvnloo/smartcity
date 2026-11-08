@@ -8,8 +8,6 @@ to put an LLM in the safety loop.
 from __future__ import annotations
 
 SHARE_URL = "https://chatgpt.com/s/t_6aaa00205bf8819195d165eccf7f500f"
-SHARE_TITLE = "Chicagoland Twin Research"
-SHARE_DATE = "2026-09-16"
 
 # This tree. Do not swap these because a paper used a 4090.
 HERO_RENDERER = "unreal"
@@ -44,15 +42,6 @@ CHICAGO_SKETCH = {
 VRAM_BUDGET_GB = 10
 MOSS_PUBLISHED_GPU = "RTX 4090 24GB"
 
-KERNEL_ROLES = {
-    "unreal": "hero camera, never the traffic engine",
-    "sumo": "default micro 8 km + meso 40 km until a 3080 Ti bench says otherwise",
-    "jax_differentiable": "candidate calibrator / nowcaster / policy search (Chicago Sketch paper)",
-    "moss": "candidate CUDA micro validator, not the brain, not the default",
-    "polaris": "licensed regional planning oracle, not the OSS runtime",
-    "carla_or_waymax": "hundreds of metres microscope, never metro Chicagoland",
-    "maplibre": "GitHub Pages lookdev, not the sim",
-}
 
 
 def architecture_locks() -> dict[str, object]:
