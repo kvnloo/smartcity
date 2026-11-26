@@ -52,6 +52,7 @@ function run(sim: SimApi, fsdShare: number, seed: number) {
   let flow = 0;
   let samples = 0;
   let minGap = Infinity;
+  let finite = true;
   while (r.t < 240) {
     r.step();
     const s = r.stats();
@@ -62,10 +63,10 @@ function run(sim: SimApi, fsdShare: number, seed: number) {
       let d = r.x[(i + 1) % r.n] - r.x[i];
       if (d <= 0) d += r.L;
       minGap = Math.min(minGap, d - sim.CAR_LEN);
-      expect(Number.isFinite(r.x[i]) && Number.isFinite(r.v[i])).toBe(true);
+      finite &&= Number.isFinite(r.x[i]) && Number.isFinite(r.v[i]);
     }
   }
-  return { kmh: (speed / samples) * 3.6, flow: flow / samples, stops: r.stops - stops0, minGap };
+  return { kmh: (speed / samples) * 3.6, flow: flow / samples, stops: r.stops - stops0, minGap, finite };
 }
 
 describe("FSD phantom-jam sim", () => {
@@ -91,9 +92,12 @@ describe("FSD phantom-jam sim", () => {
       expect(allFsd.stops).toBe(0);
       expect(mixed.kmh).toBeGreaterThan(human.kmh);
       expect(mixed.flow).toBeGreaterThan(human.flow);
-      for (const r of [human, mixed, allFsd]) expect(r.minGap).toBeGreaterThan(0);
+      for (const r of [human, mixed, allFsd]) {
+        expect(r.minGap).toBeGreaterThan(0);
+        expect(r.finite).toBe(true);
+      }
     }
-  });
+  }, 30_000); // 9 runs x 240 s of sim: ~2 s on a Mac, slower on CI runners
 
   it("is linked from the lookdev sheet", () => {
     const html = readFileSync(join(dir, "..", "index.html"), "utf8");
